@@ -7,6 +7,7 @@ from flask import Flask
 from werkzeug.routing import FloatConverter, BaseConverter, IntegerConverter, UUIDConverter, PathConverter, UnicodeConverter
 from werkzeug.routing.rules import Rule
 
+from .stubs import Response
 from .ts_types import TSType, TSSimpleType, TSObject, TSRecord, TSUnion, TSArray, TSTuple, is_signal
 
 
@@ -231,6 +232,9 @@ class FlaskAnnotationsParser:
             return TSArray(args[0])
         if origin is types.UnionType or origin is typing.Union:
             return TSUnion(args)
+        if origin is Response:
+            assert len(args) == 1, "Invalid Response type"
+            return args[0]
         self.logger.warn(
             f"can't convert '{getattr(origin, '__name__', origin)}' to a TypeScript equivalent, defaulting to 'unknown'"
         )

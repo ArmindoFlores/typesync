@@ -8,6 +8,7 @@ from flask_cors import CORS
 from werkzeug.routing import BaseConverter
 
 import ts_flask_urls
+from ts_flask_urls.stubs import Response, jsonify
 
 
 class CustomConverter(BaseConverter):
@@ -53,10 +54,10 @@ def complex() -> dict[str, tuple[IntOrString, ...]]:
     }
 
 @app.route("/with/<boolean:arg>/args")
-def with_args(arg: bool) -> tuple[Sandwich[bool, str], int]:
-    value: Sandwich[bool, str] = [arg, str(arg), arg]
-    return (value, 200)
+def with_args(arg: bool) -> Response[tuple[Sandwich[bool, str], int]]:
+    value: Sandwich[bool, str] = (arg, str(arg), arg)
+    return jsonify((value, 200))
 
 @app.route("/pytest")
-def pytest() -> AliasedArgs[int, bool]:
-    return {}
+def pytest() -> Response[AliasedArgs[int, bool]]:
+    return jsonify({})

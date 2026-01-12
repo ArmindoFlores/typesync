@@ -26,6 +26,7 @@ Some features are already implemented, others are planned.
 - [ ] Optional generation modes (types only, requests only)  
 - [ ] Configuration file support  
 - [ ] Handle recursive types (such as `type RecursiveType = tuple[int, RecursiveType]`)
+- [x] Support returning with `jsonify(...)`
 
 ## Installation
 
