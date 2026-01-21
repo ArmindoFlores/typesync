@@ -1,7 +1,7 @@
 [project]
 version = "0.0.1"
 name = "ts-flask-urls"
-description = "Lovely Spam! Wonderful Spam!"
+description = "Auto-generate TypeScript client code from Flask routes and Python type annotations."
 readme = "README.md"
 license-files = ["LICENSE"]
 dependencies = [
@@ -10,11 +10,7 @@ dependencies = [
 ]
 requires-python = ">= 3.12"
 authors = [
-  {name = "Francisco Rodrigues", email = "francisc.rodrigues0908@gmail.com"},
-]
-
-[project.optional-dependencies]
-dev = [
+  {name = "Francisco Rodrigues", email = "francisco.rodrigues0908@gmail.com"},
 ]
 
 [dependency-groups]
