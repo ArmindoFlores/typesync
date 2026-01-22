@@ -1,0 +1,29 @@
+{
+    "name": "rollup-plugin-ts-flask-urls",
+    "version": "0.0.1",
+    "description": "Auto-generate TypeScript client code from Flask routes and Python type annotations.",
+    "keywords": [
+        "rollup-plugin"
+    ],
+    "author": "Francisco Rodrigues",
+    "license": "MIT",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.json"
+    },
+    "peerDependencies": {
+        "rollup": "^4.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^25.0.10",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "fast-glob": "^3.3.3"
+    }
+}

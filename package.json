@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "workspaces": [
+    "rollup-plugin-ts-flask-urls",
+    "example/frontend"
+  ]
+}

@@ -1,6 +1,6 @@
 import * as types from "./types";
 
-const BASE_ENDPOINT = "http://127.0.0.1:5000";
+const BASE_ENDPOINT = "";
 
 function join(urlPart1: string, urlPart2: string) {
     let url = urlPart1;
@@ -48,13 +48,13 @@ export async function request_main(): Promise<types.main_ReturnType> {
     return await request(endpoint);
 }
 
-export function urlFor_complex(): string {
+export function urlFor_complex_(): string {
     const endpoint = "/complex";
     return endpoint;
 }
 
-export async function request_complex(): Promise<types.complex_ReturnType> {
-    const endpoint = urlFor_complex();
+export async function request_complex_(): Promise<types.complex__ReturnType> {
+    const endpoint = urlFor_complex_();
     return await request(endpoint);
 }
 

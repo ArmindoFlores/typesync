@@ -53,7 +53,7 @@ def main() -> APIResult[IntOrString, bool | None]:
 def complex_() -> dict[str, tuple[IntOrString, ...]]:
     return {
         "entry1": (1, "a", 2),
-        "entry2": ("x", "y"),
+        "entray2": ("x", "y"),
     }
 
 
