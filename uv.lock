@@ -220,7 +220,6 @@ requires-dist = [
     { name = "click" },
     { name = "flask" },
 ]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [

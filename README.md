@@ -27,6 +27,7 @@ Some features are already implemented, others are planned.
 - [ ] Configuration file support  
 - [ ] Handle recursive types (such as `type RecursiveType = tuple[int, RecursiveType]`)
 - [x] Support returning with `jsonify(...)`
+- [x] Support extensions via translators
 
 ## Installation
 
@@ -37,13 +38,8 @@ Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/ArmindoFlores/ts-flask-urls
 cd ts-flask-urls
+uv sync --dev
 uv pip install -e .
-```
-
-For development, install with development dependencies:
-
-```bash
-uv pip install -e ".[dev]"
 ```
 
 ## Running Tests
