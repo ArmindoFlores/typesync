@@ -6,7 +6,8 @@ readme = "README.md"
 license-files = ["LICENSE"]
 dependencies = [
   "click",
-  "flask"
+  "flask",
+  "inflection>=0.5.1",
 ]
 requires-python = ">= 3.12"
 authors = [
@@ -64,9 +65,10 @@ extend-select = [
 ]
 extend-ignore = [
   "PLR0911",
+  "PLR0913",
+  "PLR2004",
   "COM812",
   "RET504",
-  "PLR2004",
   "G004",
   "TRY400",
 ]

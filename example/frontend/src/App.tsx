@@ -1,15 +1,15 @@
 import "./App.css";
 
-import { request_with_args } from "./flask_urls/apis";
+import { API } from "./api";
+import type { WithArgsReturnType } from "./flask_urls/types";
 import { useState } from "react";
 
 export default function App() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [endpointReturnValue, setEndpointReturnValue] = useState<any>(undefined);
+    const [endpointReturnValue, setEndpointReturnValue] = useState<WithArgsReturnType>();
 
     const requestEndpoint = () => {
-        request_with_args({
-            arg: false
+        API.requestWithArgs({
+            arg: true
         }).then(result => {
             setEndpointReturnValue(result);
         });
