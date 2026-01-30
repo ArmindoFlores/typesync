@@ -92,6 +92,7 @@ class BaseTranslator(Translator):
 
         if node.origin is types.UnionType or node.origin is typing.Union:
             return TSUnion(translated_args)
+        return None
 
     def _translate_typed_dict(
         self, node: TypeNode, generics: dict[typing.TypeVar, TSType]
@@ -133,6 +134,11 @@ class BaseTranslator(Translator):
 
         if isinstance(node.origin, typing.TypeAliasType):
             return self._translate_type_alias(node, generics)
+
+        if node.origin is typing.NotRequired:
+            if len(node.args) != 1:
+                return None
+            return self._translate(node.args[0], generics)
 
         if typing.is_typeddict(node.origin):
             return self._translate_typed_dict(node, generics)
