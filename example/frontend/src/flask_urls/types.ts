@@ -52,3 +52,11 @@ export interface PytestArgsType extends RequestArgs {
     body: _pytestBody;
 }
 
+export type InferredReturnType = undefined;
+type _inferredArgs = undefined;
+type _inferredBody = undefined;
+export interface InferredArgsType extends RequestArgs {
+    args?: _inferredArgs;
+    body?: _inferredBody;
+}
+

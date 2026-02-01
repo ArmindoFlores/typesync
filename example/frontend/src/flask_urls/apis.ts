@@ -8,11 +8,11 @@ export function buildUrl(rule: string, params: Record<string, any>) {
 }
 
 export function makeAPI(requestFn: types.RequestFunction) {
-    async function optionsStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
+    async function getStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
         const endpoint = buildUrl("/static/<filename>", params.args);
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "GET", ...params}
         );
     }
 
@@ -24,16 +24,8 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function getStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
+    async function optionsStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
         const endpoint = buildUrl("/static/<filename>", params.args);
-        return await requestFn(
-            endpoint,
-            {method: "GET", ...params}
-        );
-    }
-
-    async function optionsMain(params: types.MainArgsType): Promise<types.MainReturnType> {
-        const endpoint = "/main";
         return await requestFn(
             endpoint,
             {method: "OPTIONS", ...params}
@@ -48,14 +40,6 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function postMain(params: types.MainArgsType): Promise<types.MainReturnType> {
-        const endpoint = "/main";
-        return await requestFn(
-            endpoint,
-            {method: "POST", ...params}
-        );
-    }
-
     async function getMain(params: types.MainArgsType): Promise<types.MainReturnType> {
         const endpoint = "/main";
         return await requestFn(
@@ -64,19 +48,19 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
-        const endpoint = "/complex";
+    async function postMain(params: types.MainArgsType): Promise<types.MainReturnType> {
+        const endpoint = "/main";
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "POST", ...params}
         );
     }
 
-    async function headComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
-        const endpoint = "/complex";
+    async function optionsMain(params: types.MainArgsType): Promise<types.MainReturnType> {
+        const endpoint = "/main";
         return await requestFn(
             endpoint,
-            {method: "HEAD", ...params}
+            {method: "OPTIONS", ...params}
         );
     }
 
@@ -88,19 +72,19 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params.args);
-        return await requestFn(
-            endpoint,
-            {method: "OPTIONS", ...params}
-        );
-    }
-
-    async function headWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params.args);
+    async function headComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
+        const endpoint = "/complex";
         return await requestFn(
             endpoint,
             {method: "HEAD", ...params}
+        );
+    }
+
+    async function optionsComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
+        const endpoint = "/complex";
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
         );
     }
 
@@ -112,19 +96,19 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
-        const endpoint = "/pytest";
-        return await requestFn(
-            endpoint,
-            {method: "OPTIONS", ...params}
-        );
-    }
-
-    async function headPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
-        const endpoint = "/pytest";
+    async function headWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
         return await requestFn(
             endpoint,
             {method: "HEAD", ...params}
+        );
+    }
+
+    async function optionsWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
         );
     }
 
@@ -136,22 +120,65 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
+    async function headPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
+        const endpoint = "/pytest";
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
+    }
+
+    async function optionsPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
+        const endpoint = "/pytest";
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
+    }
+
+    async function getInferred(params: types.InferredArgsType): Promise<types.InferredReturnType> {
+        const endpoint = "/inferred";
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
+    }
+
+    async function headInferred(params: types.InferredArgsType): Promise<types.InferredReturnType> {
+        const endpoint = "/inferred";
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
+    }
+
+    async function optionsInferred(params: types.InferredArgsType): Promise<types.InferredReturnType> {
+        const endpoint = "/inferred";
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
+    }
+
     return {
-        optionsStatic,
-        headStatic,
         getStatic,
-        optionsMain,
+        headStatic,
+        optionsStatic,
         headMain,
-        postMain,
         getMain,
-        optionsComplex_,
-        headComplex_,
+        postMain,
+        optionsMain,
         getComplex_,
-        optionsWithArgs,
-        headWithArgs,
+        headComplex_,
+        optionsComplex_,
         getWithArgs,
-        optionsPytest,
-        headPytest,
+        headWithArgs,
+        optionsWithArgs,
         getPytest,
+        headPytest,
+        optionsPytest,
+        getInferred,
+        headInferred,
+        optionsInferred,
     };
 }

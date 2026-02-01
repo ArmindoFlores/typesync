@@ -12,6 +12,7 @@ from werkzeug.routing import (
 )
 from werkzeug.routing.rules import Rule
 
+from .inference import infer_return_type
 from ts_flask_urls.ts_types import TSType, TSSimpleType, TSObject
 from ts_flask_urls.type_translators import TypeNode, to_type_node
 
@@ -134,6 +135,8 @@ class FlaskRouteTypeExtractor:
             annotations = get_type_hints(function)
 
             if annotations is None or "return" not in annotations:
+                inferred_type = infer_return_type(function)
+                print(inferred_type)
                 return TSSimpleType("undefined")
 
             return_annotations = annotations["return"]
