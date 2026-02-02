@@ -18,12 +18,12 @@ cli = AppGroup("ts-flask-urls")
 @click.option(
     "--types-file",
     help="Name of output file containing type definitions (defaults to 'types.ts')",
-    default="types.ts"
+    default="types.ts",
 )
 @click.option(
     "--apis-file",
     help="Name of output file containing API functions (defaults to 'apis.ts')",
-    default="apis.ts"
+    default="apis.ts",
 )
 @click.option(
     "--return-type-format",
@@ -70,7 +70,7 @@ cli = AppGroup("ts-flask-urls")
         "Defaults to: '{m_lc}{r_pc}'"
     ),
 )
-def map_urls(
+def generate(
     out_dir: str,
     endpoint: str,
     types_file: str,
@@ -78,7 +78,7 @@ def map_urls(
     return_type_format: str,
     args_type_format: str,
     function_name_format: str,
-    samefile: str | None = None
+    samefile: str | None = None,
 ):
     rules: list[Rule] = list(current_app.url_map.iter_rules())
 

@@ -8,6 +8,14 @@ export function buildUrl(rule: string, params: Record<string, any>) {
 }
 
 export function makeAPI(requestFn: types.RequestFunction) {
+    async function optionsStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
+        const endpoint = buildUrl("/static/<filename>", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
+    }
+
     async function getStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
         const endpoint = buildUrl("/static/<filename>", params.args);
         return await requestFn(
@@ -24,19 +32,11 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
-        const endpoint = buildUrl("/static/<filename>", params.args);
-        return await requestFn(
-            endpoint,
-            {method: "OPTIONS", ...params}
-        );
-    }
-
-    async function headMain(params: types.MainArgsType): Promise<types.MainReturnType> {
+    async function optionsMain(params: types.MainArgsType): Promise<types.MainReturnType> {
         const endpoint = "/main";
         return await requestFn(
             endpoint,
-            {method: "HEAD", ...params}
+            {method: "OPTIONS", ...params}
         );
     }
 
@@ -48,6 +48,14 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
+    async function headMain(params: types.MainArgsType): Promise<types.MainReturnType> {
+        const endpoint = "/main";
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
+    }
+
     async function postMain(params: types.MainArgsType): Promise<types.MainReturnType> {
         const endpoint = "/main";
         return await requestFn(
@@ -56,8 +64,8 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsMain(params: types.MainArgsType): Promise<types.MainReturnType> {
-        const endpoint = "/main";
+    async function optionsComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
+        const endpoint = "/complex";
         return await requestFn(
             endpoint,
             {method: "OPTIONS", ...params}
@@ -80,8 +88,8 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
-        const endpoint = "/complex";
+    async function optionsWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
         return await requestFn(
             endpoint,
             {method: "OPTIONS", ...params}
@@ -104,8 +112,8 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params.args);
+    async function optionsPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
+        const endpoint = "/pytest";
         return await requestFn(
             endpoint,
             {method: "OPTIONS", ...params}
@@ -128,8 +136,8 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
-        const endpoint = "/pytest";
+    async function optionsInferred(params: types.InferredArgsType): Promise<types.InferredReturnType> {
+        const endpoint = "/inferred";
         return await requestFn(
             endpoint,
             {method: "OPTIONS", ...params}
@@ -152,33 +160,25 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsInferred(params: types.InferredArgsType): Promise<types.InferredReturnType> {
-        const endpoint = "/inferred";
-        return await requestFn(
-            endpoint,
-            {method: "OPTIONS", ...params}
-        );
-    }
-
     return {
+        optionsStatic,
         getStatic,
         headStatic,
-        optionsStatic,
-        headMain,
-        getMain,
-        postMain,
         optionsMain,
+        getMain,
+        headMain,
+        postMain,
+        optionsComplex_,
         getComplex_,
         headComplex_,
-        optionsComplex_,
+        optionsWithArgs,
         getWithArgs,
         headWithArgs,
-        optionsWithArgs,
+        optionsPytest,
         getPytest,
         headPytest,
-        optionsPytest,
+        optionsInferred,
         getInferred,
         headInferred,
-        optionsInferred,
     };
 }

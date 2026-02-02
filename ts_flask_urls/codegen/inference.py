@@ -1,26 +1,90 @@
 import ast
+import builtins
 import inspect
+import itertools
 import textwrap
 import typing
 
 
 class ASTVisitor(ast.NodeVisitor):
-    def __init__(self, function: typing.Callable) -> None:
+    def __init__(self, function: typing.Callable, can_eval: bool = False) -> None:
         self.function = function
+        self.can_eval = can_eval
         self.locals: dict[str, typing.Any] = {}
         self.returns: list = []
 
     def get_variable(self, name: ast.Name) -> typing.Any:
+        local_var = self.locals.get(name.id, None)
+        if local_var is not None:
+            return local_var
         global_var = self.function.__globals__.get(name.id, None)
         if global_var is not None:
             return global_var
-        local_var = self.locals.get(name.id, None)
-        return local_var
+        builtin = getattr(builtins, name.id, None)
+        if isinstance(builtin, type):
+            return builtin
+        return None
+
+    def get_constant(self, constant: ast.Constant) -> typing.Any:
+        try:
+            constant_value = ast.literal_eval(constant)
+            return type(constant_value)
+        except Exception:
+            return None
+
+    def get_type_if_all_equal(self, expressions: list[ast.expr]) -> typing.Any:
+        if len(expressions) == 0:
+            return None
+        if len(expressions) == 1:
+            return self.get_value(expressions[0])
+
+        el_types: dict[ast.expr, typing.Any] = {}
+        for el1, el2 in itertools.pairwise(expressions):
+            el1_type = el_types[el1] if el1 in el_types else self.get_value(el1)
+            el_types.setdefault(el1, el1_type)
+
+            el2_type = el_types[el2] if el2 in el_types else self.get_value(el2)
+            el_types.setdefault(el2, el2_type)
+            if el1_type != el2_type:
+                return None
+
+        return el_types[el1]
+
+    def get_list(self, list_: ast.List) -> typing.Any:
+        list_type = self.get_type_if_all_equal(list_.elts)
+        return list if list_type is None else list[list_type]
+
+    def get_tuple(self, tuple_: ast.Tuple) -> typing.Any:
+        types = tuple(self.get_value(el) for el in tuple_.elts)
+        if len([t for t in types if t is None]) != 0:
+            return tuple
+        return tuple[types]
+
+    def get_dict(self, dict_: ast.Dict) -> typing.Any:
+        keys_type = self.get_type_if_all_equal(dict_.keys)
+        values_type = self.get_type_if_all_equal(dict_.values)
+
+        if keys_type is None and values_type is None:
+            return dict
+
+        return dict[
+            typing.Any if keys_type is None else keys_type,
+            typing.Any if values_type is None else values_type,
+        ]
 
     def get_value(self, expr: ast.expr) -> typing.Any:
+        print("trying to get value of", ast.unparse(expr), expr)
         match expr:
             case ast.Name():
                 return self.get_variable(expr)
+            case ast.Constant():
+                return self.get_constant(expr)
+            case ast.List():
+                return self.get_list(expr)
+            case ast.Tuple():
+                return self.get_tuple(expr)
+            case ast.Dict():
+                return self.get_dict(expr)
             case ast.Call():
                 return self.infer_call_type(expr)
             case _:
@@ -65,19 +129,31 @@ class ASTVisitor(ast.NodeVisitor):
             case _:
                 return None
 
-    def resolve_return_value(self, value: ast.expr) -> typing.Any:
-        match value:
-            case ast.Call():
-                return self.infer_call_type(value)
-            case _:
-                return None
-
     def visit_Return(self, node: ast.Return) -> None:
         if node.value is not None:
-            self.returns.append(self.resolve_return_value(node.value))
+            self.returns.append(self.get_value(node.value))
         self.generic_visit(node)
 
-    def visit_Assign(self, node: ast.Assign):
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+        annotation = self.get_value(node.annotation)
+        if annotation is None and self.can_eval:
+            annotation_string = ast.unparse(node.annotation)
+            annotation_code = compile(
+                annotation_string,
+                "<annotation>",
+                "eval",
+                0,
+            )
+            try:
+                annotation = eval(annotation_code, self.function.__globals__, {})  # noqa: S307
+            except Exception as e:
+                print(f"failed to parse annotation {annotation_string!r}: {e!s}")
+                annotation = None
+        if annotation is not None:
+            self.locals[node.target.id] = annotation
+        self.generic_visit(node)
+
+    def visit_Assign(self, node: ast.Assign) -> None:
         for target in node.targets:
             if not isinstance(target, ast.Name):
                 continue
@@ -86,7 +162,11 @@ class ASTVisitor(ast.NodeVisitor):
 
 
 def infer_return_type(function: typing.Callable):
-    source = inspect.getsource(function)
+    try:
+        source = inspect.getsource(function)
+    except (TypeError, OSError):
+        return None
+
     source = textwrap.dedent(source)
     statements = ast.parse(source).body
     if len(statements) != 1:
@@ -97,6 +177,6 @@ def infer_return_type(function: typing.Callable):
     if not isinstance(body, ast.FunctionDef):
         return None
 
-    visitor = ASTVisitor(function)
+    visitor = ASTVisitor(function, can_eval=True)
     visitor.visit(body)
     return visitor.returns

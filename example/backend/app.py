@@ -73,7 +73,8 @@ class TestInference:
     def _inferred(self) -> dict[str, int]:
         return {"hello": 13}
 
+
 @app.route("/inferred")
 def inferred():
-    instance = TestInference()
-    return instance._inferred()
+    hello = "str"
+    return (1, hello, 2)
