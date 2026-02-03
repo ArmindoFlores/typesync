@@ -67,14 +67,3 @@ def with_args(arg: bool) -> Response[tuple[Sandwich[bool, str], int]]:
 @ts_flask_urls.utils.json_kwarg
 def pytest(json: int) -> Response[AliasedArgs[int, bool]]:
     return jsonify({"hello": ([], [json])})
-
-
-class TestInference:
-    def _inferred(self) -> dict[str, int]:
-        return {"hello": 13}
-
-
-@app.route("/inferred")
-def inferred():
-    hello = "str"
-    return (1, hello, 2)

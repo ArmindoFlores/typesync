@@ -12,7 +12,7 @@ export type RequestFunction = (
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => Promise<any>;
 
-export type StaticReturnType = undefined;
+export type StaticReturnType = any;
 type _staticArgs = {filename: string;};
 type _staticBody = undefined;
 export interface StaticArgsType extends RequestArgs {
@@ -51,12 +51,3 @@ export interface PytestArgsType extends RequestArgs {
     args?: _pytestArgs;
     body: _pytestBody;
 }
-
-export type InferredReturnType = undefined;
-type _inferredArgs = undefined;
-type _inferredBody = undefined;
-export interface InferredArgsType extends RequestArgs {
-    args?: _inferredArgs;
-    body?: _inferredBody;
-}
-

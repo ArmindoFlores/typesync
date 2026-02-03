@@ -3,12 +3,19 @@ import builtins
 import inspect
 import itertools
 import textwrap
+import types
 import typing
+
+if typing.TYPE_CHECKING:
+    from .extractor import Logger
 
 
 class ASTVisitor(ast.NodeVisitor):
-    def __init__(self, function: typing.Callable, can_eval: bool = False) -> None:
+    def __init__(
+        self, function: typing.Callable, logger: "Logger", can_eval: bool = False
+    ) -> None:
         self.function = function
+        self.logger = logger
         self.can_eval = can_eval
         self.locals: dict[str, typing.Any] = {}
         self.returns: list = []
@@ -73,7 +80,6 @@ class ASTVisitor(ast.NodeVisitor):
         ]
 
     def get_value(self, expr: ast.expr) -> typing.Any:
-        print("trying to get value of", ast.unparse(expr), expr)
         match expr:
             case ast.Name():
                 return self.get_variable(expr)
@@ -99,9 +105,17 @@ class ASTVisitor(ast.NodeVisitor):
             # This is a class
             return called_function
 
+        origin = typing.get_origin(called_function) or called_function
+        if isinstance(origin, type):
+            # This is of the form type[T], so we should return T
+            args = typing.get_args(called_function)
+            if len(args) != 1:
+                return None
+            return args[0]
+
         annotations = getattr(called_function, "__annotations__", {})
         if "return" not in annotations:
-            return infer_return_type(called_function)
+            return infer_return_type(called_function, self.logger, self.can_eval)
 
         return annotations["return"]
 
@@ -115,7 +129,7 @@ class ASTVisitor(ast.NodeVisitor):
             return None
         annotations = getattr(func, "__annotations__", {})
         if "return" not in annotations:
-            return infer_return_type(func)
+            return infer_return_type(func, self.logger, self.can_eval)
         return annotations["return"]
 
     def infer_call_type(self, call: ast.Call) -> typing.Any:
@@ -147,7 +161,9 @@ class ASTVisitor(ast.NodeVisitor):
             try:
                 annotation = eval(annotation_code, self.function.__globals__, {})  # noqa: S307
             except Exception as e:
-                print(f"failed to parse annotation {annotation_string!r}: {e!s}")
+                self.logger.warning(
+                    f"failed to parse annotation {annotation_string!r}: {e!s}"
+                )
                 annotation = None
         if annotation is not None:
             self.locals[node.target.id] = annotation
@@ -161,12 +177,44 @@ class ASTVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-def infer_return_type(function: typing.Callable):
+def smart_type(type_: typing.Any) -> typing.Any:
+    if isinstance(type_, type):
+        return type[type_]
+    return type_
+
+
+def define_types_from_closure(function: typing.Callable, visitor: ASTVisitor) -> None:
+    closure: tuple[types.CellType, ...] | None = getattr(function, "__closure__", None)
+    code: types.CodeType | None = getattr(function, "__code__", None)
+    if code is None or closure is None:
+        return
+
+    visitor.locals.update(
+        zip(
+            code.co_freevars,
+            (smart_type(cell.cell_contents) for cell in closure),
+            strict=True,
+        )
+    )
+
+
+def define_types_from_signature(function: typing.Callable, visitor: ASTVisitor) -> None:
+    try:
+        signature = inspect.signature(function)
+        visitor.locals.update(
+            {param: value.annotation for param, value in signature.parameters.items()}
+        )
+    except ValueError:
+        pass
+
+
+def infer_return_type(
+    function: typing.Callable, logger: "Logger", can_eval: bool
+) -> typing.Any:
     try:
         source = inspect.getsource(function)
     except (TypeError, OSError):
         return None
-
     source = textwrap.dedent(source)
     statements = ast.parse(source).body
     if len(statements) != 1:
@@ -177,6 +225,15 @@ def infer_return_type(function: typing.Callable):
     if not isinstance(body, ast.FunctionDef):
         return None
 
-    visitor = ASTVisitor(function, can_eval=True)
+    visitor = ASTVisitor(function, logger, can_eval=can_eval)
+    define_types_from_closure(function, visitor)
+    define_types_from_signature(function, visitor)
     visitor.visit(body)
-    return visitor.returns
+    if len(visitor.returns) == 0:
+        return type(None)
+
+    for rt1, rt2 in itertools.pairwise(visitor.returns):
+        if rt1 != rt2:
+            return typing.Any
+
+    return visitor.returns[0]

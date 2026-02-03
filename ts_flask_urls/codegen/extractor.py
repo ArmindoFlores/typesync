@@ -57,10 +57,14 @@ class FlaskRouteTypeExtractor:
         app: Flask,
         rule: Rule,
         translators: tuple[type["Translator"]] | None = None,
+        inference_enabled: bool = False,
+        inference_can_eval: bool = False,
         logger: Logger | None = None,
     ) -> None:
         self.app = app
         self.rule = rule
+        self.inference_enabled = inference_enabled
+        self.inference_can_eval = inference_can_eval
         self.logger = ClickLogger() if logger is None else logger
         self.translators = (
             self._load_default_translators() if translators is None else translators
@@ -109,45 +113,63 @@ class FlaskRouteTypeExtractor:
             self.logger.error(f"couldn't parse argument types ({e})")
             return None
 
-    def translate_type(self, type_: Type) -> TSType:
+    def translate_type(self, type_: Type) -> tuple[TSType, str | None]:
+        warning = None
+
         def translate(
-            node: TypeNode,
-            generics: dict[typing.TypeVar, TSType] | None
+            node: TypeNode, generics: dict[typing.TypeVar, TSType] | None
         ) -> TSType:
+            nonlocal warning
             for translator in translators:
                 r = translator.translate(node, generics)
                 if r is not None:
                     return r
 
-            self.logger.warning(
+            warning = (
                 f"can't translate '{getattr(node.origin, '__name__', node.origin)}'"
-                " to a TypeScript equivalent, defaulting to 'any'",
+                " to a TypeScript equivalent, defaulting to 'any'"
             )
             return TSSimpleType("any")
 
         translators = [Translator(translate) for Translator in self.translators]
         node = to_type_node(type_)
-        return translate(node, {})
+        return translate(node, {}), warning
 
     def parse_return_type(self) -> TSType | None:
         try:
             function = self.app.view_functions[self.rule.endpoint]
             annotations = get_type_hints(function)
+            if annotations is not None and "return" in annotations:
+                return_annotations = annotations["return"]
+                route_return_annotations = self._get_route_annotations(
+                    return_annotations
+                )
+                return_type, warning = self.translate_type(route_return_annotations)
+            else:
+                return_type = warning = None
 
-            if annotations is None or "return" not in annotations:
-                inferred_type = infer_return_type(function)
-                print(inferred_type)
-                return TSSimpleType("undefined")
+            if self.inference_enabled and (return_type is None or warning is not None):
+                route_return_type = infer_return_type(
+                    function, self.logger, self.inference_can_eval
+                )
+                if route_return_type is not None:
+                    return_type, warning = self.translate_type(
+                        self._get_route_annotations(route_return_type)
+                    )
 
-            return_annotations = annotations["return"]
-            route_return_annotations = self._get_route_annotations(return_annotations)
-            return self.translate_type(route_return_annotations)
+            if warning is not None:
+                self.logger.warning(warning)
+
+            return return_type or TSSimpleType("any")
 
         except Exception as e:
             self.logger.error(
                 f"couldn't parse return type of '{self.rule.endpoint}' ({e})"
             )
             return None
+
+        else:
+            return TSSimpleType("any") if return_type is None else return_type
 
     def parse_json_body(self) -> TSType | None:
         try:
@@ -165,13 +187,18 @@ class FlaskRouteTypeExtractor:
                 return None
 
             json_body_annotations = annotations[json_key]
-            return self.translate_type(json_body_annotations)
+            json_body_type, warning = self.translate_type(json_body_annotations)
+            if warning is not None:
+                self.logger.warning(warning)
 
         except Exception as e:
             self.logger.error(
                 f"couldn't parse JSON body type of '{self.rule.endpoint}' ({e})"
             )
             return None
+
+        else:
+            return json_body_type
 
     def _get_route_annotations_from_tuple(self, tp: typing.Any) -> Type:
         args = typing.get_args(tp)
@@ -199,4 +226,7 @@ class FlaskRouteTypeExtractor:
             return TSSimpleType("string")
 
         return_annotations = annotations["return"]
-        return self.translate_type(return_annotations)
+        return_type, warning = self.translate_type(return_annotations)
+        if warning is not None:
+            self.logger.warning(warning)
+        return return_type

@@ -40,6 +40,14 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
+    async function postMain(params: types.MainArgsType): Promise<types.MainReturnType> {
+        const endpoint = "/main";
+        return await requestFn(
+            endpoint,
+            {method: "POST", ...params}
+        );
+    }
+
     async function getMain(params: types.MainArgsType): Promise<types.MainReturnType> {
         const endpoint = "/main";
         return await requestFn(
@@ -53,14 +61,6 @@ export function makeAPI(requestFn: types.RequestFunction) {
         return await requestFn(
             endpoint,
             {method: "HEAD", ...params}
-        );
-    }
-
-    async function postMain(params: types.MainArgsType): Promise<types.MainReturnType> {
-        const endpoint = "/main";
-        return await requestFn(
-            endpoint,
-            {method: "POST", ...params}
         );
     }
 
@@ -136,38 +136,14 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsInferred(params: types.InferredArgsType): Promise<types.InferredReturnType> {
-        const endpoint = "/inferred";
-        return await requestFn(
-            endpoint,
-            {method: "OPTIONS", ...params}
-        );
-    }
-
-    async function getInferred(params: types.InferredArgsType): Promise<types.InferredReturnType> {
-        const endpoint = "/inferred";
-        return await requestFn(
-            endpoint,
-            {method: "GET", ...params}
-        );
-    }
-
-    async function headInferred(params: types.InferredArgsType): Promise<types.InferredReturnType> {
-        const endpoint = "/inferred";
-        return await requestFn(
-            endpoint,
-            {method: "HEAD", ...params}
-        );
-    }
-
     return {
         optionsStatic,
         getStatic,
         headStatic,
         optionsMain,
+        postMain,
         getMain,
         headMain,
-        postMain,
         optionsComplex_,
         getComplex_,
         headComplex_,
@@ -177,8 +153,5 @@ export function makeAPI(requestFn: types.RequestFunction) {
         optionsPytest,
         getPytest,
         headPytest,
-        optionsInferred,
-        getInferred,
-        headInferred,
     };
 }
