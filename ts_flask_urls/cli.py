@@ -16,14 +16,28 @@ cli = AppGroup("ts-flask-urls")
 @click.option("--endpoint", "-E", help="The base endpoint.", default="")
 @click.option("--samefile", "-S", help="Write types and apis to the same file")
 @click.option(
+    "--inference",
+    "-i",
+    is_flag=True,
+    help="Whether to use inference when type annotations cannot be resolved",
+)
+@click.option(
+    "--inference-can-eval",
+    is_flag=True,
+    help=(
+        "Whether eval() can be called during inference. WARNING: this will"
+        " execute arbitrary code."
+    ),
+)
+@click.option(
     "--types-file",
     help="Name of output file containing type definitions (defaults to 'types.ts')",
-    default="types.ts"
+    default="types.ts",
 )
 @click.option(
     "--apis-file",
     help="Name of output file containing API functions (defaults to 'apis.ts')",
-    default="apis.ts"
+    default="apis.ts",
 )
 @click.option(
     "--return-type-format",
@@ -70,15 +84,17 @@ cli = AppGroup("ts-flask-urls")
         "Defaults to: '{m_lc}{r_pc}'"
     ),
 )
-def map_urls(
+def generate(
     out_dir: str,
     endpoint: str,
+    inference: bool,
+    inference_can_eval: bool,
     types_file: str,
     apis_file: str,
     return_type_format: str,
     args_type_format: str,
     function_name_format: str,
-    samefile: str | None = None
+    samefile: str | None = None,
 ):
     rules: list[Rule] = list(current_app.url_map.iter_rules())
 
@@ -98,7 +114,13 @@ def map_urls(
             endpoint,
         )
         result = code_writer.write(
-            FlaskRouteTypeExtractor(current_app, rule) for rule in rules
+            FlaskRouteTypeExtractor(
+                current_app,
+                rule,
+                inference_enabled=inference,
+                inference_can_eval=inference_can_eval,
+            )
+            for rule in rules
         )
         if not result:
             click.secho("Errors occurred during file generation", fg="red")

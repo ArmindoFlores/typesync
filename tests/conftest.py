@@ -38,3 +38,17 @@ def return_parser():
         return None
 
     return inner
+
+
+@pytest.fixture
+def inf_return_parser():
+    def inner(app: flask.Flask, endpoint: str) -> TSType | None:
+        rules = app.url_map.iter_rules()
+        for rule in rules:
+            if rule.endpoint == endpoint:
+                return FlaskRouteTypeExtractor(
+                    app, rule, inference_enabled=True, inference_can_eval=True
+                ).parse_return_type()
+        return None
+
+    return inner
