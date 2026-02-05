@@ -14,7 +14,7 @@ class ASTVisitor(ast.NodeVisitor):
     def __init__(
         self, function: typing.Callable, logger: "Logger", can_eval: bool = False
     ) -> None:
-        self.function = function
+        self.function: typing.Callable = function
         self.logger = logger
         self.can_eval = can_eval
         self.locals: dict[str, typing.Any] = {}
@@ -24,7 +24,8 @@ class ASTVisitor(ast.NodeVisitor):
         local_var = self.locals.get(name.id, None)
         if local_var is not None:
             return local_var
-        global_var = self.function.__globals__.get(name.id, None)
+        globals_dict = getattr(self.function, "__globals__", {})
+        global_var = globals_dict.get(name.id, None)
         if global_var is not None:
             return global_var
         builtin = getattr(builtins, name.id, None)
@@ -68,7 +69,11 @@ class ASTVisitor(ast.NodeVisitor):
         return tuple[types]
 
     def get_dict(self, dict_: ast.Dict) -> typing.Any:
-        keys_type = self.get_type_if_all_equal(dict_.keys)
+        if None in dict_.keys:
+            # TODO: support unpacking
+            return dict
+        keys = typing.cast(list[ast.expr], dict_.keys)
+        keys_type = self.get_type_if_all_equal(keys)
         values_type = self.get_type_if_all_equal(dict_.values)
 
         if keys_type is None and values_type is None:
@@ -149,6 +154,10 @@ class ASTVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+        target = node.target
+        if not isinstance(target, ast.Name):
+            # TODO
+            return
         annotation = self.get_value(node.annotation)
         if annotation is None and self.can_eval:
             annotation_string = ast.unparse(node.annotation)
@@ -159,14 +168,15 @@ class ASTVisitor(ast.NodeVisitor):
                 0,
             )
             try:
-                annotation = eval(annotation_code, self.function.__globals__, {})  # noqa: S307
+                function_globals = getattr(self.function, "__globals__", {})
+                annotation = eval(annotation_code, function_globals, {})  # noqa: S307
             except Exception as e:
                 self.logger.warning(
                     f"failed to parse annotation {annotation_string!r}: {e!s}"
                 )
                 annotation = None
         if annotation is not None:
-            self.locals[node.target.id] = annotation
+            self.locals[target.id] = annotation
         self.generic_visit(node)
 
     def visit_Assign(self, node: ast.Assign) -> None:

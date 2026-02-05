@@ -36,6 +36,12 @@ dev = [
     "ruff>=0.14.13",
 ]
 
+[tool.ty.rules]
+invalid-type-form = "ignore"
+
+[tool.ty.src]
+exclude = ["tests"]
+
 [tool.ruff.lint]
 extend-select = [
   "E",      # pycodestyle (errors)

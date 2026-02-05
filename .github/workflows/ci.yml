@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.12'
+
+      - name: Lint code
+        run: |
+          uv run ruff check
+
+      - name: Type check with ty
+        run: |
+          uv run ty check
+
+      - name: Run tests 🧪
+        run: |
+          uv run pytest

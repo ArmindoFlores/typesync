@@ -350,43 +350,6 @@ wheels = [
 ]
 
 [[package]]
-name = "typesync"
-version = "0.0.1"
-source = { editable = "." }
-dependencies = [
-    { name = "click" },
-    { name = "flask" },
-    { name = "inflection" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "flask-cors" },
-    { name = "pre-commit" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "ty" },
-    { name = "types-flask-cors" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "click" },
-    { name = "flask" },
-    { name = "inflection", specifier = ">=0.5.1" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "flask-cors" },
-    { name = "pre-commit", specifier = ">=4.5.1" },
-    { name = "pytest", specifier = ">=9.0.2" },
-    { name = "ruff", specifier = ">=0.14.13" },
-    { name = "ty", specifier = ">=0.0.11" },
-    { name = "types-flask-cors", specifier = ">=6.0.0.20250809" },
-]
-
-[[package]]
 name = "ty"
 version = "0.0.11"
 source = { registry = "https://pypi.org/simple" }
@@ -421,6 +384,43 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/45/e0/e5dd841bf475765fb61cb04c1e70d2fd0675a0d4ddfacd50a333eafe7267/types_flask_cors-6.0.0.20250809.tar.gz", hash = "sha256:24380a2b82548634c0931d50b9aafab214eea9f85dcc04f15ab1518752a7e6aa", size = 9951, upload-time = "2025-08-09T03:16:37.454Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9f/5e/1e60c29eb5796233d4d627ca4979c4ae8da962fd0aae0cdb6e3e6a807bbc/types_flask_cors-6.0.0.20250809-py3-none-any.whl", hash = "sha256:f6d660dddab946779f4263cb561bffe275d86cb8747ce02e9fec8d340780131b", size = 9971, upload-time = "2025-08-09T03:16:36.593Z" },
+]
+
+[[package]]
+name = "typesync"
+version = "0.0.1a1"
+source = { editable = "." }
+dependencies = [
+    { name = "click" },
+    { name = "flask" },
+    { name = "inflection" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "flask-cors" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "ty" },
+    { name = "types-flask-cors" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "click" },
+    { name = "flask" },
+    { name = "inflection", specifier = ">=0.5.1" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "flask-cors" },
+    { name = "pre-commit", specifier = ">=4.5.1" },
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "ruff", specifier = ">=0.14.13" },
+    { name = "ty", specifier = ">=0.0.11" },
+    { name = "types-flask-cors", specifier = ">=6.0.0.20250809" },
 ]
 
 [[package]]
