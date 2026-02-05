@@ -57,6 +57,7 @@ class FlaskRouteTypeExtractor:
         app: Flask,
         rule: Rule,
         translators: tuple[type["Translator"]] | None = None,
+        translator_priorities: dict[str, int] | None = None,
         inference_enabled: bool = False,
         inference_can_eval: bool = False,
         logger: Logger | None = None,
@@ -66,12 +67,25 @@ class FlaskRouteTypeExtractor:
         self.inference_enabled = inference_enabled
         self.inference_can_eval = inference_can_eval
         self.logger = ClickLogger() if logger is None else logger
-        self.translators = (
-            self._load_default_translators() if translators is None else translators
+        self.translator_priorities = (
+            {} if translator_priorities is None else translator_priorities
+        )
+        self.translators = self._sort_translators(
+            (*self.default_translators(), *(translators or ())),
+            self.translator_priorities,
         )
 
     @staticmethod
-    def _load_default_translators() -> tuple[type["Translator"], ...]:
+    def _sort_translators(
+        translators: typing.Iterable["Translator"],
+        priorities: dict[str, int] | None = None,
+    ) -> tuple["Translator"]:
+        return tuple(
+            sorted(translators, key=lambda t: -priorities.get(t.ID, t.DEFAULT_PRIORITY))
+        )
+
+    @staticmethod
+    def default_translators() -> tuple[type["Translator"], ...]:
         from typesync.type_translators import BaseTranslator, FlaskTranslator  # noqa: PLC0415
 
         return (BaseTranslator, FlaskTranslator)

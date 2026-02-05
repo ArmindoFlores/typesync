@@ -7,13 +7,8 @@ from typesync.utils import Response
 
 
 class FlaskTranslator(Translator):
-    def __init__(
-        self,
-        translate: typing.Callable[
-            [TypeNode, dict[typing.TypeVar, TSType] | None], TSType
-        ],
-    ) -> None:
-        self._translate = translate
+    DEFAULT_PRIORITY = -10
+    ID = "typesync.FlaskTranslator"
 
     def translate(
         self, node: TypeNode, generics: dict[typing.TypeVar, TSType] | None

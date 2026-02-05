@@ -1,11 +1,17 @@
 import os
+import typing
 
 import click
 from flask import current_app
 from flask.cli import AppGroup
+from prettytable import PrettyTable
 from werkzeug.routing.rules import Rule
 
+from . import argument_types
 from .codegen import CodeWriter, FlaskRouteTypeExtractor
+
+if typing.TYPE_CHECKING:
+    from .type_translators import Translator
 
 
 cli = AppGroup("typesync")
@@ -14,12 +20,28 @@ cli = AppGroup("typesync")
 @cli.command(help="Generate Typescript types based on Flask routes.")
 @click.argument("out_dir", type=click.Path(file_okay=False, resolve_path=True))
 @click.option("--endpoint", "-E", help="The base endpoint.", default="")
-@click.option("--samefile", "-S", help="Write types and apis to the same file")
+@click.option("--samefile", "-S", help="Write types and apis to the same file.")
+@click.option(
+    "--translator",
+    "-t",
+    help=(
+        "Path to a python script containing a additional type translators. "
+        "May be used multiple times."
+    ),
+    type=argument_types.TRANSLATOR_PLUGIN,
+    multiple=True,
+)
+@click.option(
+    "--translator-priority",
+    help=("Set the priority of a translator.May be used multiple times."),
+    type=argument_types.TRANSLATOR_PRIORITY,
+    multiple=True,
+)
 @click.option(
     "--inference",
     "-i",
     is_flag=True,
-    help="Whether to use inference when type annotations cannot be resolved",
+    help="Whether to use inference when type annotations cannot be resolved.",
 )
 @click.option(
     "--inference-can-eval",
@@ -31,12 +53,12 @@ cli = AppGroup("typesync")
 )
 @click.option(
     "--types-file",
-    help="Name of output file containing type definitions (defaults to 'types.ts')",
+    help="Name of output file containing type definitions (defaults to 'types.ts').",
     default="types.ts",
 )
 @click.option(
     "--apis-file",
-    help="Name of output file containing API functions (defaults to 'apis.ts')",
+    help="Name of output file containing API functions (defaults to 'apis.ts').",
     default="apis.ts",
 )
 @click.option(
@@ -51,7 +73,7 @@ cli = AppGroup("typesync")
         "{uc} (UPPERCASE), "
         "{lc} (lowercase), "
         "{sc} (snake_case). "
-        "Defaults to: '{pc}ReturnType'"
+        "Defaults to: '{pc}ReturnType'."
     ),
 )
 @click.option(
@@ -66,7 +88,7 @@ cli = AppGroup("typesync")
         "{uc} (UPPERCASE), "
         "{lc} (lowercase), "
         "{sc} (snake_case). "
-        "Defaults to: '{pc}ArgsType'"
+        "Defaults to: '{pc}ArgsType'."
     ),
 )
 @click.option(
@@ -81,12 +103,14 @@ cli = AppGroup("typesync")
         "{r_uc} or {m_uc} (UPPERCASE), "
         "{r_lc} or {m_lc} (lowercase), "
         "{r_sc} or {m_sc} (snake_case). "
-        "Defaults to: '{m_lc}{r_pc}'"
+        "Defaults to: '{m_lc}{r_pc}'."
     ),
 )
 def generate(
     out_dir: str,
     endpoint: str,
+    translator: tuple["Translator", ...],
+    translator_priority: tuple[tuple[str, int], ...],
     inference: bool,
     inference_can_eval: bool,
     types_file: str,
@@ -117,6 +141,8 @@ def generate(
             FlaskRouteTypeExtractor(
                 current_app,
                 rule,
+                translators=translator,
+                translator_priorities=dict(translator_priority),
                 inference_enabled=inference,
                 inference_can_eval=inference_can_eval,
             )
@@ -124,3 +150,16 @@ def generate(
         )
         if not result:
             click.secho("Errors occurred during file generation", fg="red")
+
+
+@cli.command(help="Show available translators and their default priorities.")
+def list_translators():
+    translators = FlaskRouteTypeExtractor.default_translators()
+    table = PrettyTable()
+    table.field_names = ["ID", "Priority"]
+    table.add_rows(
+        [[translator.ID, translator.DEFAULT_PRIORITY] for translator in translators]
+    )
+    table.align["ID"] = "l"
+    table.align["Priority"] = "r"
+    print(table)

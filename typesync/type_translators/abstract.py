@@ -7,13 +7,16 @@ if typing.TYPE_CHECKING:
 
 
 class Translator(abc.ABC):
-    @abc.abstractmethod
+    DEFAULT_PRIORITY: int = 0
+    ID: str
+
     def __init__(
         self,
-        convert: typing.Callable[
+        translate: typing.Callable[
             ["TypeNode", dict[typing.TypeVar, "TSType"] | None], "TSType"
         ],
-    ) -> None: ...
+    ) -> None:
+        self._translate = translate
 
     @abc.abstractmethod
     def translate(

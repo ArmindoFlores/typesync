@@ -8,6 +8,7 @@ dependencies = [
   "click",
   "flask",
   "inflection>=0.5.1",
+  "prettytable>=3.17.0",
 ]
 requires-python = ">= 3.12"
 authors = [

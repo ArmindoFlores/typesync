@@ -17,13 +17,8 @@ from typesync.ts_types import (
 
 
 class BaseTranslator(Translator):
-    def __init__(
-        self,
-        translate: typing.Callable[
-            [TypeNode, dict[typing.TypeVar, TSType] | None], TSType
-        ],
-    ):
-        self._translate = translate
+    DEFAULT_PRIORITY = 0
+    ID = "typesync.BaseTranslator"
 
     def _unwrap_generic(
         self, node: TypeNode, generics: dict[typing.TypeVar, TSType]
