@@ -37,9 +37,7 @@ Some features are already implemented, others are planned.
 
 ## Installation
 
-The project is not yet published on PyPI. Installation is currently done directly from source, preferably using `uv`.
-
-Clone the repository and install dependencies:
+You can install typesync using `pip install typesync`. Alternatively, you can do it directly from source, preferably using `uv`, by cloning the repository and installing dependencies:
 
 ```bash
 git clone https://github.com/ArmindoFlores/typesync
