@@ -12,6 +12,17 @@ class Response[T](flask.Response):
     """
 
 
+class Loadable[T]:
+    """A deferred computation that executes only when .load() is called."""
+
+    def __init__(self, func: Callable[[], T]) -> None:
+        self._func = func
+
+    def load(self) -> T:
+        """Execute the deferred computation and return its result."""
+        return self._func()
+
+
 def jsonify[T](data: T) -> Response[T]:
     """A typed wrapper around `flask.jsonify`.
     Use this instead of `flask.jsonify` so that `typesync`can track the shape
@@ -20,10 +31,23 @@ def jsonify[T](data: T) -> Response[T]:
     return typing.cast(Response[T], flask.jsonify(data))
 
 
+def deferred[**P, R](func: Callable[P, R]) -> Callable[P, Loadable[R]]:
+    """Wrap a function to return a Loadable instead of executing immediately."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs) -> Loadable[R]:
+        def inner() -> R:
+            return func(*args, **kwargs)
+
+        return Loadable(inner)
+
+    return wrapper
+
+
 def _with_json_body_decorator[**P, R](
     func: Callable[P, R],
     key: str,
-    loader: Callable[[typing.Any], typing.Any] | None = None
+    loader: Callable[[typing.Any], typing.Any] | None = None,
 ) -> Callable[P, R]:
     # Tag this route as accepting a JSON parameter
     func._typesync_json_key = key  # type: ignore[attr-defined]
@@ -31,8 +55,7 @@ def _with_json_body_decorator[**P, R](
     @functools.wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         kwargs[key] = (
-            flask.request.json if loader is None else
-            loader(flask.request.json)
+            flask.request.json if loader is None else loader(flask.request.json)
         )
         return func(*args, **kwargs)
 
@@ -65,7 +88,7 @@ def with_json_body[**P, R](
 
 def with_json_body[**P, R](
     key: Callable[P, R] | str = "json",
-    loader: Callable[[typing.Any], typing.Any] | None = None
+    loader: Callable[[typing.Any], typing.Any] | None = None,
 ) -> Callable[P, R] | Callable[[Callable[P, R]], Callable[P, R]]:
     if isinstance(key, str):
 
