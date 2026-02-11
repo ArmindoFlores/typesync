@@ -220,7 +220,7 @@ class RouteTypeExtractor:
     def parse_json_body(self) -> dict[HTTPMethod, TSType]:
         try:
             function = self.app.view_functions[self.rule.endpoint]
-            json_key = getattr(function, "_typesync", None)
+            json_key = getattr(function, "_typesync_json_key", None)
             if json_key is None:
                 return {}
 

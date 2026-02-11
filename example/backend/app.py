@@ -63,7 +63,7 @@ def with_args(arg: bool) -> Response[tuple[Sandwich[bool, str], int]]:
     return jsonify((value, 200))
 
 
-@app.route("/pytest")
-@typesync.utils.json_kwarg
+@app.route("/pytest", methods=("POST",))
+@typesync.utils.with_json_body
 def pytest(json: int) -> Response[AliasedArgs[int, bool]]:
     return jsonify({"hello": ([], [json])})
