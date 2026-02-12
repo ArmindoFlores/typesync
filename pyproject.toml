@@ -1,5 +1,5 @@
 [project]
-version = "0.0.1a3"
+version = "0.0.1a4"
 name = "typesync"
 description = "Auto-generate TypeScript client code from Flask routes and Python type annotations."
 readme = "README.md"
