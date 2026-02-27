@@ -1,6 +1,7 @@
 import typing
 
 from typesync.ts_types import TSObject, TSType
+from typesync.utils.pydantic_utils import PydanticModelDump
 from .abstract import Translator
 from .type_node import TypeNode, to_type_node
 
@@ -24,6 +25,9 @@ class PydanticTranslator(Translator):
     def translate(
         self, node: TypeNode, generics: dict[typing.TypeVar, TSType] | None
     ) -> TSType | None:
+        if node.origin is PydanticModelDump and len(node.args) == 1:
+            return self._translate(node.args[0], generics)
+
         if not isinstance(node.origin, type) or not issubclass(
             node.origin, self._pydantic.BaseModel
         ):
