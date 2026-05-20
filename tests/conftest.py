@@ -22,7 +22,13 @@ def args_parser():
         rules = app.url_map.iter_rules()
         for rule in rules:
             if rule.endpoint == endpoint:
-                return RouteTypeExtractor(app, rule).parse_args_types().get("GET")
+                return (
+                    RouteTypeExtractor(
+                        app, rule, translators=RouteTypeExtractor.all_translators()
+                    )
+                    .parse_args_types()
+                    .get("GET")
+                )
         return None
 
     return inner
@@ -34,7 +40,13 @@ def return_parser():
         rules = app.url_map.iter_rules()
         for rule in rules:
             if rule.endpoint == endpoint:
-                return RouteTypeExtractor(app, rule).parse_return_types().get("GET")
+                return (
+                    RouteTypeExtractor(
+                        app, rule, translators=RouteTypeExtractor.all_translators()
+                    )
+                    .parse_return_types()
+                    .get("GET")
+                )
         return None
 
     return inner
@@ -46,7 +58,13 @@ def json_body_parser():
         rules = app.url_map.iter_rules()
         for rule in rules:
             if rule.endpoint == endpoint:
-                return RouteTypeExtractor(app, rule).parse_json_body().get("POST")
+                return (
+                    RouteTypeExtractor(
+                        app, rule, translators=RouteTypeExtractor.all_translators()
+                    )
+                    .parse_json_body()
+                    .get("POST")
+                )
         return None
 
     return inner
@@ -60,7 +78,11 @@ def inf_return_parser():
             if rule.endpoint == endpoint:
                 return (
                     RouteTypeExtractor(
-                        app, rule, inference_enabled=True, inference_can_eval=True
+                        app,
+                        rule,
+                        inference_enabled=True,
+                        inference_can_eval=True,
+                        translators=RouteTypeExtractor.all_translators(),
                     )
                     .parse_return_types()
                     .get("GET")

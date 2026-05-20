@@ -7,6 +7,7 @@ import types
 from click import ParamType
 
 from .type_translators import Translator
+from .codegen import RouteTypeExtractor
 
 
 class PythonModuleParamType(ParamType):
@@ -55,6 +56,12 @@ class TranslatorPluginParamType(ParamType):
         self.python_module_plugin_param_type = PythonModuleParamType()
 
     def convert(self, value, param, ctx) -> type[Translator]:
+        if isinstance(value, str):
+            translators = RouteTypeExtractor.all_translators()
+            for translator in translators:
+                if value == translator.ID:
+                    return translator
+
         module = self.python_module_plugin_param_type.convert(value, param, ctx)
 
         translator_func = getattr(module, "translator", None)

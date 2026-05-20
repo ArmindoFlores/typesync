@@ -25,7 +25,8 @@ cli = AppGroup("typesync")
     "--translator",
     "-t",
     help=(
-        "Path to a python script containing a additional type translators. "
+        "Path to a python script containing an additional type translator, "
+        "or name of a built-in one. "
         "May be used multiple times."
     ),
     type=argument_types.TRANSLATOR_PLUGIN,
@@ -131,8 +132,7 @@ def generate(
     samefile: str | None = None,
 ):
     rules: list[Rule] = sorted(
-        current_app.url_map.iter_rules(),
-        key=lambda rule: rule.endpoint
+        current_app.url_map.iter_rules(), key=lambda rule: rule.endpoint
     )
 
     os.makedirs(out_dir, exist_ok=True)
@@ -169,7 +169,7 @@ def generate(
 @cli.command(help="Show available translators and their default priorities.")
 def list_translators():
     translators = RouteTypeExtractor.sort_translators(
-        RouteTypeExtractor.default_translators(), {}
+        RouteTypeExtractor.all_translators(), {}
     )
     table = PrettyTable()
     table.field_names = ["ID", "Priority"]

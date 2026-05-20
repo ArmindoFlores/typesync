@@ -1,5 +1,5 @@
 [project]
-version = "0.0.1a4"
+version = "0.0.1a5"
 name = "typesync"
 description = "Auto-generate TypeScript client code from Flask routes and Python type annotations."
 readme = "README.md"
@@ -36,18 +36,22 @@ dev = [
     "pre-commit>=4.5.1",
     "ruff>=0.14.13",
     "pydantic>=2.0",
+    "marshmallow>=4.0",
 ]
 
 [project.optional-dependencies]
 pydantic = [
     "pydantic>=2.0",
 ]
+marshmallow = [
+    "marshmallow>=4.0",
+]
 
 [tool.ty.rules]
 invalid-type-form = "ignore"
 
 [tool.ty.src]
-# exclude = ["tests"]
+exclude = ["tests"]
 
 [tool.ruff.lint]
 extend-select = [

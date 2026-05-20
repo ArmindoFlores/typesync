@@ -64,6 +64,30 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
+    async function getMm(params: types.MmGETArgsType): Promise<types.MmGETReturnType> {
+        const endpoint = "/mm";
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
+    }
+
+    async function headMm(params: types.MmHEADArgsType): Promise<types.MmHEADReturnType> {
+        const endpoint = "/mm";
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
+    }
+
+    async function optionsMm(params: types.MmOPTIONSArgsType): Promise<types.MmOPTIONSReturnType> {
+        const endpoint = "/mm";
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
+    }
+
     async function optionsPydantic(params: types.PydanticOPTIONSArgsType): Promise<types.PydanticOPTIONSReturnType> {
         const endpoint = "/pydantic";
         return await requestFn(
@@ -136,6 +160,9 @@ export function makeAPI(requestFn: types.RequestFunction) {
         headMain,
         optionsMain,
         postMain,
+        getMm,
+        headMm,
+        optionsMm,
         optionsPydantic,
         postPydantic,
         getStatic,

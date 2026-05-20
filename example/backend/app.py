@@ -1,6 +1,13 @@
+import datetime
 import sys
 
+from marshmallow import Schema, fields
 import pydantic
+
+from typesync.utils.marshmallow_utils import (
+    MarshmallowSchemaDump,
+    marshmallow_schema_dump,
+)
 
 sys.path.append("../..")
 
@@ -74,3 +81,32 @@ class MyModel(pydantic.BaseModel):
 def pydantic(json: Loadable[MyModel]) -> Response[AliasedArgs[int, bool]]:
     model = json.load()
     return jsonify({"hello": ([], [model.x])})
+
+
+def _first_name(obj) -> str:
+    return obj["name"].split(" ")[0]
+
+
+class ArtistSchema(Schema):
+    name = fields.Str(required=True)
+    first_name = fields.Function(_first_name)
+    age = fields.Method("_age")
+    date_birth = fields.Date()
+    is_famous = fields.Bool()
+
+    def _age(self, schema: object) -> int | None:
+        if "date_birth" not in schema:
+            return None
+        return (datetime.date.today() - schema["date_birth"]).days // 365
+
+
+@app.route("/mm")
+def mm() -> MarshmallowSchemaDump[ArtistSchema]:
+    return marshmallow_schema_dump(
+        ArtistSchema(),
+        {
+            "name": "John Doe",
+            "date_birth": datetime.date(2001, 5, 4),
+            "is_famous": False,
+        },
+    )

@@ -68,9 +68,33 @@ export interface MainPOSTArgsType extends RequestArgs {
     body?: _mainPOSTBody;
 }
 
+export type MmGETReturnType = {name: string; first_name?: string; age?: number | null; date_birth?: string; is_famous?: boolean;};
+type _mmGETArgs = undefined;
+type _mmGETBody = undefined;
+export interface MmGETArgsType extends RequestArgs {
+    args?: _mmGETArgs;
+    body?: _mmGETBody;
+}
+
+export type MmHEADReturnType = {name: string; first_name?: string; age?: number | null; date_birth?: string; is_famous?: boolean;};
+type _mmHEADArgs = undefined;
+type _mmHEADBody = undefined;
+export interface MmHEADArgsType extends RequestArgs {
+    args?: _mmHEADArgs;
+    body?: _mmHEADBody;
+}
+
+export type MmOPTIONSReturnType = {name: string; first_name?: string; age?: number | null; date_birth?: string; is_famous?: boolean;};
+type _mmOPTIONSArgs = undefined;
+type _mmOPTIONSBody = undefined;
+export interface MmOPTIONSArgsType extends RequestArgs {
+    args?: _mmOPTIONSArgs;
+    body?: _mmOPTIONSBody;
+}
+
 export type PydanticOPTIONSReturnType = Record<string, [boolean[], number[]]>;
 type _pydanticOPTIONSArgs = undefined;
-type _pydanticOPTIONSBody = {x: number;};
+type _pydanticOPTIONSBody = any;
 export interface PydanticOPTIONSArgsType extends RequestArgs {
     args?: _pydanticOPTIONSArgs;
     body: _pydanticOPTIONSBody;
@@ -78,7 +102,7 @@ export interface PydanticOPTIONSArgsType extends RequestArgs {
 
 export type PydanticPOSTReturnType = Record<string, [boolean[], number[]]>;
 type _pydanticPOSTArgs = undefined;
-type _pydanticPOSTBody = {x: number;};
+type _pydanticPOSTBody = any;
 export interface PydanticPOSTArgsType extends RequestArgs {
     args?: _pydanticPOSTArgs;
     body: _pydanticPOSTBody;

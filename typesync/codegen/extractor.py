@@ -94,14 +94,25 @@ class RouteTypeExtractor:
             AnnotationsTranslator,
             BaseTranslator,
             FlaskTranslator,
-            PydanticTranslator,
         )
 
         return (
             AnnotationsTranslator,
             BaseTranslator,
             FlaskTranslator,
+        )
+
+    @staticmethod
+    def all_translators() -> tuple[type["Translator"], ...]:
+        from typesync.type_translators import (  # noqa: PLC0415
             PydanticTranslator,
+            MarshmallowTranslator,
+        )
+
+        return (
+            *RouteTypeExtractor.default_translators(),
+            PydanticTranslator,
+            MarshmallowTranslator,
         )
 
     @property
