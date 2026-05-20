@@ -93,7 +93,7 @@ class TSObject(TSType):
 
 class TSAggregatorType(TSType):
     def __init__(self, types: Sequence[TSType]):
-        self.types: Sequence[TSType] = types
+        self.types: list[TSType] = sorted(types, key=lambda t: str(t))
 
 
 class TSUnion(TSAggregatorType):
