@@ -114,7 +114,7 @@ def test_class_factory(app: Flask, inf_return_parser: ParserFixture) -> None:
         def process(self) -> R: ...
 
     class TestInference:
-        def process(self) -> int:
+        def process(self):
             return 12
 
     def make_route_function[R](

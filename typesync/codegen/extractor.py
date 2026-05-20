@@ -178,9 +178,28 @@ class RouteTypeExtractor:
             )
             return TSSimpleType("any")
 
-        translators = [Translator(translate, ctx) for Translator in self.translators]
+        translators = [
+            Translator(translate, self.get_return_type, ctx)
+            for Translator in self.translators
+        ]
         node = to_type_node(type_)
         return translate(node, {}), warning
+
+    def get_return_type(self, function: typing.Callable) -> TypeNode | None:
+        annotations = get_type_hints(function)
+        return_annotations = None
+        if annotations is not None and "return" in annotations:
+            return_annotations = annotations["return"]
+        elif self.inference_enabled:
+            return_annotations = infer_return_type(
+                function, self.logger, self.inference_can_eval
+            )
+
+        if return_annotations is None and self.skip_unannotated:
+            return None
+
+        type_node = to_type_node(return_annotations)
+        return type_node
 
     def parse_return_types(self, force_inference=False) -> dict[HTTPMethod, TSType]:
         try:

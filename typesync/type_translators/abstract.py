@@ -17,9 +17,11 @@ class Translator(abc.ABC):
         translate: typing.Callable[
             ["TypeNode", dict[typing.TypeVar, "TSType"] | None], "TSType"
         ],
+        get_type: typing.Callable[[typing.Callable], "TypeNode | None"],
         ctx: "TranslationContext",
     ) -> None:
         self._translate = translate
+        self._get_type = get_type
         self.ctx = ctx
 
     @abc.abstractmethod

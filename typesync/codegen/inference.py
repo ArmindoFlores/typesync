@@ -9,6 +9,24 @@ if typing.TYPE_CHECKING:
     from .extractor import Logger
 
 
+def unwrap_generics(tp, generics: dict[typing.TypeVar, typing.Any]):
+    if isinstance(tp, typing.TypeVar):
+        return generics.get(tp, typing.Any)
+
+    origin = typing.get_origin(tp)
+    args = typing.get_args(tp)
+
+    if origin is None or not args:
+        return tp  # Not generic
+
+    new_args = tuple(unwrap_generics(arg, generics) for arg in args)
+
+    if isinstance(origin, type):
+        return origin[new_args] if len(new_args) > 1 else origin[new_args[0]]
+    else:
+        return tp.copy_with(new_args)
+
+
 class ASTVisitor(ast.NodeVisitor):
     def __init__(
         self, function: typing.Callable, logger: "Logger", can_eval: bool = False
@@ -54,7 +72,7 @@ class ASTVisitor(ast.NodeVisitor):
             most_generic_type = closest_common_parent_type(
                 self.get_value(element),
                 most_generic_type,
-                allow_literals=allow_literals
+                allow_literals=allow_literals,
             )
             if most_generic_type is None:
                 break
@@ -104,7 +122,20 @@ class ASTVisitor(ast.NodeVisitor):
             case _:
                 return None
 
-    def from_func_call(self, func: ast.Name) -> typing.Any:
+    def get_argument_dict(
+        self, func: typing.Callable, args: list[ast.expr], keywords: list[ast.keyword]
+    ) -> dict[str, typing.Any]:
+        signature = inspect.signature(func)
+        bound = signature.bind(
+            *[self.get_value(arg) for arg in args],
+            **{str(kv.arg): self.get_value(kv.value) for kv in keywords},
+        )
+        bound.apply_defaults()
+        return bound.arguments
+
+    def from_func_call(
+        self, func: ast.Name, fargs: list[ast.expr], fkeywords: list[ast.keyword]
+    ) -> typing.Any:
         called_function = self.get_variable(func)
         if called_function is None:
             return None
@@ -122,9 +153,26 @@ class ASTVisitor(ast.NodeVisitor):
             return args[0]
 
         annotations = getattr(called_function, "__annotations__", {})
-        if "return" not in annotations:
-            return infer_return_type(called_function, self.logger, self.can_eval)
-        return annotations["return"]
+        return_type = (
+            annotations["return"]
+            if "return" in annotations
+            else infer_return_type(called_function, self.logger, self.can_eval)
+        )
+
+        # If there are generic parameters, try to infer them from the argument values
+        if len(called_function.__type_params__) > 0:
+            generics = {}
+            argument_dict = self.get_argument_dict(called_function, fargs, fkeywords)
+            for arg, arg_type in annotations.items():
+                if arg == "return":
+                    continue
+                # TODO: handle things like def x[T](v: type[T]): ... where
+                # T is not strictly the type of v
+                if isinstance(arg_type, typing.TypeVar) and arg in argument_dict:
+                    generics[arg_type] = argument_dict[arg]
+            return_type = unwrap_generics(return_type, generics)
+
+        return return_type
 
     def from_method_call(self, method: ast.Attribute) -> typing.Any:
         value = self.get_value(method.value)
@@ -144,7 +192,7 @@ class ASTVisitor(ast.NodeVisitor):
 
         match callable_:
             case ast.Name():
-                return self.from_func_call(callable_)
+                return self.from_func_call(callable_, call.args, call.keywords)
             case ast.Attribute():
                 return self.from_method_call(callable_)
             case _:
@@ -221,48 +269,46 @@ def define_types_from_signature(function: typing.Callable, visitor: ASTVisitor) 
 
 
 def closest_common_parent_type(
-        type1: typing.Any, type2: typing.Any, allow_literals: bool = True
-    ) -> typing.Any:
-        if type1 == type2:
-            return type1
+    type1: typing.Any, type2: typing.Any, allow_literals: bool = True
+) -> typing.Any:
+    if type1 == type2:
+        return type1
 
-        types = [type1, type2]
-        literals = True
+    types = [type1, type2]
+    literals = True
 
-        # 1st case: literals are an instance of their underlying type
-        for i, type_ in enumerate(types):
-            if typing.get_origin(type_) is typing.Literal:
-                args = typing.get_args(type_)
-                if len(args) < 1:
-                    continue
-                types[i] = type(args[0])
-            else:
-                literals = False
+    # 1st case: literals are an instance of their underlying type
+    for i, type_ in enumerate(types):
+        if typing.get_origin(type_) is typing.Literal:
+            args = typing.get_args(type_)
+            if len(args) < 1:
+                continue
+            types[i] = type(args[0])
+        else:
+            literals = False
 
-        if types[0] == types[1]:
-            if literals and allow_literals:
-                total_args = [
-                    *typing.get_args(type1), *typing.get_args(type2)
-                ]
-                args_without_duplicates = list(set(total_args))
-                if len(args_without_duplicates) > 1 and types[0] is bool:
-                    # Special case: typing.Literal[True, False] <=> bool
-                    return bool
-                if len(args_without_duplicates) < 10:
-                    # If there are less than 10 literal types, return
-                    # a literal with all of those options.
-                    # FIXME: don't use magic number
-                    return typing.Literal[*args_without_duplicates]
-            # Return the underlying type
-            return types[0]
+    if types[0] == types[1]:
+        if literals and allow_literals:
+            total_args = [*typing.get_args(type1), *typing.get_args(type2)]
+            args_without_duplicates = list(set(total_args))
+            if len(args_without_duplicates) > 1 and types[0] is bool:
+                # Special case: typing.Literal[True, False] <=> bool
+                return bool
+            if len(args_without_duplicates) < 10:
+                # If there are less than 10 literal types, return
+                # a literal with all of those options.
+                # FIXME: don't use magic number
+                return typing.Literal[*args_without_duplicates]
+        # Return the underlying type
+        return types[0]
 
-        # 2nd case: one is a more generic version of the same type, such as
-        # dict and dict[str, int]
-        origins = [typing.get_origin(type_) or type_ for type_ in types]
-        if origins[0] == origins[1]:
-            return origins[0]
+    # 2nd case: one is a more generic version of the same type, such as
+    # dict and dict[str, int]
+    origins = [typing.get_origin(type_) or type_ for type_ in types]
+    if origins[0] == origins[1]:
+        return origins[0]
 
-        return None
+    return None
 
 
 def flatten_union(type_: typing.Any) -> list:
@@ -288,12 +334,10 @@ def coalesce_types(type_list: list) -> list:
     i = 0
     j = 1
     while i + j < len(result):
-        if result[i] != result[i+j]:
-            common = closest_common_parent_type(
-                result[i], result[i+j]
-            )
+        if result[i] != result[i + j]:
+            common = closest_common_parent_type(result[i], result[i + j])
             if common is not None:
-                result[i] = result[i+j] = common
+                result[i] = result[i + j] = common
                 i = 0
                 j = 0
         j += 1
@@ -302,6 +346,7 @@ def coalesce_types(type_list: list) -> list:
             i += 1
 
     return list(set(result))
+
 
 def infer_return_type(
     function: typing.Callable, logger: "Logger", can_eval: bool

@@ -142,3 +142,43 @@ def test_method_and_function(app: Flask, return_parser: ParserFixture) -> None:
         ),
         required=(True, False, False, False, False),
     )
+
+
+def test_inferred(app: Flask, inf_return_parser: ParserFixture) -> None:
+    def _first_name(schema):
+        return str(schema["name"].split(" ")[0])
+
+    class ArtistSchema(Schema):
+        name = fields.Str(required=True)
+        first_name = fields.Function(_first_name)
+        age = fields.Method("_age")
+        date_birth = fields.Date()
+        is_famous = fields.Bool()
+
+        def _age(self, schema: dict):
+            if "date_birth" not in schema:
+                return None
+            return int((datetime.date.today() - schema["date_birth"]).days / 365)
+
+    @app.route("/main")
+    def main():
+        return marshmallow_schema_dump(
+            ArtistSchema(),
+            obj={
+                "name": "John Doe",
+                "date_birth": datetime.date(2001, 1, 1),
+                "is_famous": False,
+            },
+        )
+
+    assert inf_return_parser(app, "main") == TSObject(
+        keys=("name", "first_name", "age", "date_birth", "is_famous"),
+        value_types=(
+            TSSimpleType("string"),
+            TSSimpleType("string"),
+            TSUnion((TSSimpleType("null"), TSSimpleType("number"))),
+            TSSimpleType("string"),
+            TSSimpleType("boolean"),
+        ),
+        required=(True, False, False, False, False),
+    )

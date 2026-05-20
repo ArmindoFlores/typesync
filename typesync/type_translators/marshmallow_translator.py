@@ -58,20 +58,16 @@ class MarshmallowTranslator(Translator):
         self, field, node: TypeNode, generics: dict[typing.TypeVar, TSType] | None
     ) -> TSType:
         method = getattr(node.origin, field.serialize_method_name)
-        return_type = to_type_node(method).hints.get("return")
+        return_type = self._get_type(method)
         if return_type is None:
-            # once Translator._type(...) is implemented, we should use that
-            # instead of to_type_node to use inference if enabled
             return TSSimpleType("any")
         return self._translate(return_type, generics)
 
     def _translate_marshmallow_function(
         self, field, node: TypeNode, generics: dict[typing.TypeVar, TSType] | None
     ) -> TSType:
-        return_type = to_type_node(field.serialize_func).hints.get("return")
+        return_type = self._get_type(field.serialize_func)
         if return_type is None:
-            # once Translator._type(...) is implemented, we should use that
-            # instead of to_type_node to use inference if enabled
             return TSSimpleType("any")
         return self._translate(return_type, generics)
 

@@ -71,3 +71,24 @@ def test_return(app: Flask, return_parser: ParserFixture) -> None:
         ),
         required=(True, False, True),
     )
+
+
+def test_inferred(app: Flask, inf_return_parser: ParserFixture) -> None:
+    class SimpleModel(BaseModel):
+        id: int
+        name: str = "John"
+        friends: list["SimpleModel"]
+
+    @app.route("/main")
+    def main():
+        return pydantic_model_dump(SimpleModel(id=1, friends=[]))
+
+    assert inf_return_parser(app, "main") == TSObject(
+        keys=("id", "name", "friends"),
+        value_types=(
+            TSSimpleType("number"),
+            TSSimpleType("string"),
+            TSArray(TSRecursiveType()),
+        ),
+        required=(True, False, True),
+    )

@@ -42,5 +42,6 @@ class PydanticTranslator(Translator):
             value.is_required() for value in node.origin.model_fields.values()
         )
         # TODO: Handle other Pydantic properties
+        # TODO: Handle Pydantic computed properties
 
         return TSObject(keys, value_types, required)
