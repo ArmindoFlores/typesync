@@ -94,7 +94,7 @@ class ArtistSchema(Schema):
     date_birth = fields.Date()
     is_famous = fields.Bool()
 
-    def _age(self, schema: object) -> int | None:
+    def _age(self, schema: dict) -> int | None:
         if "date_birth" not in schema:
             return None
         return (datetime.date.today() - schema["date_birth"]).days // 365

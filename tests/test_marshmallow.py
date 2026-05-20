@@ -105,7 +105,7 @@ def test_complex_model(app: Flask, return_parser: ParserFixture) -> None:
 
 
 def test_method_and_function(app: Flask, return_parser: ParserFixture) -> None:
-    def _first_name(schema: object) -> str:
+    def _first_name(schema: dict) -> str:
         return schema["name"].split(" ")[0]
 
     class ArtistSchema(Schema):
@@ -115,7 +115,7 @@ def test_method_and_function(app: Flask, return_parser: ParserFixture) -> None:
         date_birth = fields.Date()
         is_famous = fields.Bool()
 
-        def _age(self, schema: object) -> int | None:
+        def _age(self, schema: dict) -> int | None:
             if "date_birth" not in schema:
                 return None
             return (datetime.date.today() - schema["date_birth"]).days // 365
