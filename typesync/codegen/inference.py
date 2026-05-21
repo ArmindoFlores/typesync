@@ -27,6 +27,12 @@ def unwrap_generics(tp, generics: dict[typing.TypeVar, typing.Any]):
         return tp.copy_with(new_args)
 
 
+def get_wrapped_function(function: typing.Callable) -> typing.Callable:
+    if hasattr(function, "__wrapped__"):
+        return get_wrapped_function(typing.cast(typing.Callable, function.__wrapped__))
+    return function
+
+
 class ASTVisitor(ast.NodeVisitor):
     def __init__(
         self, function: typing.Callable, logger: "Logger", can_eval: bool = False
@@ -365,9 +371,10 @@ def infer_return_type(
     if not isinstance(body, ast.FunctionDef):
         return None
 
-    visitor = ASTVisitor(function, logger, can_eval=can_eval)
-    define_types_from_closure(function, visitor)
-    define_types_from_signature(function, visitor)
+    underlying_function = get_wrapped_function(function)
+    visitor = ASTVisitor(underlying_function, logger, can_eval=can_eval)
+    define_types_from_closure(underlying_function, visitor)
+    define_types_from_signature(underlying_function, visitor)
     visitor.visit(body)
     if len(visitor.returns) == 0:
         return type(None)

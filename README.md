@@ -32,6 +32,7 @@ Some features are already implemented, others are planned.
 - [x] Support returning with `jsonify(...)`
 - [x] Support extensions via translators
 - [ ] Support different type translations depending on whether a type is the output or input of a view function
+- [ ] Handle decorated functions whose return type is changed
 
 \* Not all cases are supported.
 
