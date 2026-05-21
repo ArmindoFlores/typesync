@@ -7,7 +7,7 @@ from typesync.ts_types import TSArray, TSObject, TSSimpleType, TSUnion
 from typesync.utils.marshmallow_utils import (
     MarshmallowSchemaDump,
     marshmallow_schema_dump,
-    Schema as CustomSchema
+    Schema as CustomSchema, marshmallow_schema_dump_many
 )
 
 from conftest import ParserFixture
@@ -41,6 +41,23 @@ def test_simple_model(app: Flask, return_parser: ParserFixture) -> None:
             TSSimpleType("boolean"),
         ),
         required=(True, False, False, False),
+    )
+
+def test_many(app: Flask, return_parser: ParserFixture) -> None:
+    class ArtistSchema(Schema):
+        name = fields.Str(required=True)
+
+    @app.route("/main")
+    def main() -> list[MarshmallowSchemaDump[ArtistSchema]]:
+        return marshmallow_schema_dump_many(
+            ArtistSchema(many=True),
+            {"name": "John Doe"},
+        )
+
+    assert return_parser(app, "main") == TSArray(
+        TSObject(
+            keys=("name",), value_types=(TSSimpleType("string"),), required=(True,),
+        )
     )
 
 

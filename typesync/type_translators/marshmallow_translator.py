@@ -163,5 +163,4 @@ class MarshmallowTranslator(Translator):
             value.required for value in node.origin._declared_fields.values()
         )
         # TODO: Handle other Marshmallow properties
-
         return TSObject(keys, value_types, required)
