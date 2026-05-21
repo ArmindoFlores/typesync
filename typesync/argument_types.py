@@ -22,7 +22,7 @@ class PythonModuleParamType(ParamType):
 
         path = pathlib.Path(value).resolve()
 
-        if not path.exists:
+        if not path.exists():
             return self.fail(f"file {value!r} does not exist", param, ctx)
 
         if not path.is_file():

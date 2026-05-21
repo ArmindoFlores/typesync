@@ -7,6 +7,7 @@ from typesync.ts_types import TSArray, TSObject, TSSimpleType, TSUnion
 from typesync.utils.marshmallow_utils import (
     MarshmallowSchemaDump,
     marshmallow_schema_dump,
+    Schema as CustomSchema
 )
 
 from conftest import ParserFixture
@@ -148,7 +149,7 @@ def test_inferred(app: Flask, inf_return_parser: ParserFixture) -> None:
     def _first_name(schema):
         return str(schema["name"].split(" ")[0])
 
-    class ArtistSchema(Schema):
+    class ArtistSchema(CustomSchema):
         name = fields.Str(required=True)
         first_name = fields.Function(_first_name)
         age = fields.Method("_age")
@@ -162,14 +163,11 @@ def test_inferred(app: Flask, inf_return_parser: ParserFixture) -> None:
 
     @app.route("/main")
     def main():
-        return marshmallow_schema_dump(
-            ArtistSchema(),
-            obj={
-                "name": "John Doe",
-                "date_birth": datetime.date(2001, 1, 1),
-                "is_famous": False,
-            },
-        )
+        return ArtistSchema().dump(obj={
+            "name": "John Doe",
+            "date_birth": datetime.date(2001, 1, 1),
+            "is_famous": False,
+        })
 
     assert inf_return_parser(app, "main") == TSObject(
         keys=("name", "first_name", "age", "date_birth", "is_famous"),

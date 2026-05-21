@@ -40,8 +40,8 @@ def to_type_node(
     mapping = {} if mapping is None else mapping
     origin = typing.get_origin(type_) or type_
     params: tuple[typing.TypeVar, ...] = getattr(origin, "__type_params__", ())
-    args = ()
-    annotations = ()
+    args: tuple[TypeNode, ...] = ()
+    annotations = []
     if origin is not typing.Annotated:
         args = tuple(
             to_type_node(arg, original_type, mapping) for arg in typing.get_args(type_)
@@ -50,7 +50,7 @@ def to_type_node(
         base_args = typing.get_args(type_)
         if len(base_args) > 0:
             args = (to_type_node(base_args[0], original_type, mapping),)
-            annotations = base_args[1:]
+            annotations = list(base_args[1:])
     hints = {
         key: to_type_node(hint, original_type, mapping)
         for key, hint in getattr(origin, "__annotations__", {}).items()
@@ -77,7 +77,7 @@ def to_type_node(
         params=params,
         args=args,
         hints=hints,
-        annotation=annotations[0] if len(annotations) else None,
+        annotation=annotations[0] if len(annotations) > 0 else None,
         value=(
             to_type_node(
                 origin.__value__,

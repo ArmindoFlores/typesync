@@ -33,6 +33,16 @@ def get_wrapped_function(function: typing.Callable) -> typing.Callable:
     return function
 
 
+def replace_self_with(cls: type, annotation: typing.Any) -> typing.Any:
+    if annotation is typing.Self:
+        return cls
+    origin = typing.get_origin(annotation)
+    args = typing.get_args(annotation)
+    if origin is None or len(args) == 0:
+        return annotation
+    return origin[*[replace_self_with(cls, arg) for arg in args]]
+
+
 class ASTVisitor(ast.NodeVisitor):
     def __init__(
         self, function: typing.Callable, logger: "Logger", can_eval: bool = False
@@ -191,7 +201,9 @@ class ASTVisitor(ast.NodeVisitor):
         annotations = getattr(func, "__annotations__", {})
         if "return" not in annotations:
             return infer_return_type(func, self.logger, self.can_eval)
-        return annotations["return"]
+
+        cls = value if isinstance(value, type) else type(value)
+        return replace_self_with(cls, annotations["return"])
 
     def infer_call_type(self, call: ast.Call) -> typing.Any:
         callable_ = call.func
