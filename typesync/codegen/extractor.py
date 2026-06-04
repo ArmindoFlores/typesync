@@ -84,6 +84,10 @@ class RouteTypeExtractor:
         translators: typing.Iterable[T],
         priorities: dict[str, int],
     ) -> tuple[T, ...]:
+        translator_ids = {t.ID for t in translators}
+        for translator in priorities:
+            if translator not in translator_ids:
+                raise KeyError(f"Translator '{translator}' is not loaded")
         return tuple(
             sorted(translators, key=lambda t: -priorities.get(t.ID, t.DEFAULT_PRIORITY))
         )

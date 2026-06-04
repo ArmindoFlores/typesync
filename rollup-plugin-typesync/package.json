@@ -1,6 +1,6 @@
 {
     "name": "rollup-plugin-typesync",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Auto-generate TypeScript client code from Flask routes and Python type annotations.",
     "keywords": [
         "rollup-plugin"

@@ -26,7 +26,7 @@ Some features are already implemented, others are planned.
     - [x] Customize generation behavior (naming, visibility, etc.)
 - [ ] Improved error reporting for unsupported or ambiguous annotations
 - [ ] Optional generation modes (types only, requests only)
-- [ ] Configuration file support
+- [x] Configuration file support
 - [x] Support custom formatting for generated code
 - [x] Handle recursive types (such as `type RecursiveType = tuple[int, RecursiveType]`)*
 - [x] Support returning with `jsonify(...)`

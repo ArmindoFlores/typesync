@@ -1,5 +1,4 @@
 import os
-import typing
 
 import click
 from flask import current_app
@@ -7,23 +6,23 @@ from flask.cli import AppGroup
 from prettytable import PrettyTable
 from werkzeug.routing.rules import Rule
 
-from . import argument_types
+from . import argument_types, config
 from .codegen import CodeWriter, RouteTypeExtractor
-
-if typing.TYPE_CHECKING:
-    from .type_translators import Translator
 
 
 cli = AppGroup("typesync")
 
 
 @cli.command(help="Generate Typescript types based on Flask routes.")
-@click.argument("out_dir", type=click.Path(file_okay=False, resolve_path=True))
+@click.argument(
+    "out_dir", default=None, type=click.Path(file_okay=False, resolve_path=True)
+)
 @click.option("--endpoint", "-E", help="The base endpoint.", default="")
 @click.option("--samefile", "-S", help="Write types and apis to the same file.")
 @click.option(
     "--translator",
     "-t",
+    "translators",
     help=(
         "Path to a python script containing an additional type translator, "
         "or name of a built-in one. "
@@ -34,7 +33,12 @@ cli = AppGroup("typesync")
 )
 @click.option(
     "--translator-priority",
-    help=("Set the priority of a translator.May be used multiple times."),
+    "translator_priorities",
+    callback=lambda _ctx, _option, value: dict(value),
+    help=(
+        "Set the priority of a translator (TranslatorName:priority). "
+        "May be used multiple times."
+    ),
     type=argument_types.TRANSLATOR_PRIORITY,
     multiple=True,
 )
@@ -116,49 +120,49 @@ cli = AppGroup("typesync")
         "Defaults to: '{m_lc}{r_pc}'."
     ),
 )
-def generate(
-    out_dir: str,
-    endpoint: str,
-    translator: tuple[type["Translator"], ...],
-    translator_priority: tuple[tuple[str, int], ...],
-    inference: bool,
-    inference_can_eval: bool,
-    skip_unannotated: bool,
-    types_file: str,
-    apis_file: str,
-    return_type_format: str,
-    args_type_format: str,
-    function_name_format: str,
-    samefile: str | None = None,
-):
+@click.option(
+    "--config",
+    type=click.Path(file_okay=False, resolve_path=True),
+    help="A config file to be used in addition to the command line arguments.",
+)
+@click.pass_context
+def generate(ctx: click.Context, **_):
+    try:
+        params = config.merge_config_params(ctx)
+    except Exception as e:
+        click.secho(f"Error: could not parse config file: {e!s}", fg="red")
+        raise SystemExit(1) from None
+
+    if params.out_dir is None:
+        ctx.fail("Missing argument 'OUT_DIR'")
+
     rules: list[Rule] = sorted(
         current_app.url_map.iter_rules(), key=lambda rule: rule.endpoint
     )
-
-    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(params.out_dir, exist_ok=True)
 
     with (
-        open(os.path.join(out_dir, types_file), "w") as types_f,
-        open(os.path.join(out_dir, apis_file), "w") as api_f,
+        open(os.path.join(params.out_dir, params.types_file), "w") as types_f,
+        open(os.path.join(params.out_dir, params.apis_file), "w") as api_f,
     ):
         code_writer = CodeWriter(
             types_f,
             api_f,
-            types_file,
-            return_type_format,
-            args_type_format,
-            function_name_format,
-            endpoint,
+            params.types_file,
+            params.return_type_format,
+            params.args_type_format,
+            params.function_name_format,
+            params.endpoint,
         )
         result = code_writer.write(
             RouteTypeExtractor(
                 current_app,
                 rule,
-                translators=translator,
-                translator_priorities=dict(translator_priority),
-                inference_enabled=inference,
-                inference_can_eval=inference_can_eval,
-                skip_unannotated=skip_unannotated,
+                translators=params.translators,
+                translator_priorities=params.translator_priorities,
+                inference_enabled=params.inference,
+                inference_can_eval=params.inference_can_eval,
+                skip_unannotated=params.skip_unannotated,
             )
             for rule in rules
         )

@@ -15,7 +15,7 @@ class MarshmallowTranslator(Translator):
         try:
             import marshmallow  # noqa: PLC0415
         except ImportError as exc:
-            raise RuntimeError(  # noqa: TRY003
+            raise RuntimeError(
                 "Marshmallow support requires 'marshmallow'. "
                 "Install with `pip install typesync[marshmallow]`."
             ) from exc

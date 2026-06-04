@@ -1,0 +1,7 @@
+[tool.typesync]
+out_dir = "../frontend/src/flask_urls"
+inference = true
+translators = ["typesync.FlaskTranslator", "typesync.MarshmallowTranslator", "typesync.PydanticTranslator"]
+
+[tool.typesync.translator_priorities]
+"typesync.FlaskTranslator" = -10

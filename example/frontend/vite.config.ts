@@ -7,7 +7,6 @@ export default defineConfig({
     plugins: [
         react(),
         typesyncPlugin({
-            outDir: "src/flask_urls",
             backendRoot: "../backend"
         })
     ],

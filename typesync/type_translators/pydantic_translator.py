@@ -15,7 +15,7 @@ class PydanticTranslator(Translator):
         try:
             import pydantic  # noqa: PLC0415
         except ImportError as exc:
-            raise RuntimeError(  # noqa: TRY003
+            raise RuntimeError(
                 "Pydantic support requires 'pydantic'. "
                 "Install with `pip install typesync[pydantic]`."
             ) from exc

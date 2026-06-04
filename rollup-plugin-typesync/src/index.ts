@@ -5,11 +5,12 @@ import fg from "fast-glob";
 import path from "node:path";
 
 interface RequiredTypesyncPluginOptions {
-    outDir: string;
     backendRoot: string;
 }
 
 interface OptionalTypesyncPluginOptions {
+    outDir: string;
+    configFile: string;
     translators: string[];
     translatorPriorities: Record<string, number>;
     skipUnannotated: boolean;
@@ -26,6 +27,13 @@ export type TypesyncPluginOptions = RequiredTypesyncPluginOptions & Partial<Opti
 
 function cmdLineArgsFromOptions(options: Partial<OptionalTypesyncPluginOptions>): string[] {
     const args: string[] = [];
+    if (options.outDir) {
+        args.push(options.outDir);
+    }
+    if (options.configFile) {
+        args.push("--config");
+        args.push(options.configFile);
+    }
     for (const translator of options.translators ?? []) {
         args.push("-t");
         args.push(translator);
@@ -82,7 +90,6 @@ async function aspawn(command: string, args: readonly string[] | undefined, opti
 async function runCodegen(this: PluginContext, options: TypesyncPluginOptions) {
     const {
         backendRoot,
-        outDir,
     } = options;
 
     const result = await aspawn(
@@ -90,7 +97,6 @@ async function runCodegen(this: PluginContext, options: TypesyncPluginOptions) {
         [
             "typesync",
             "generate",
-            path.resolve(outDir),
             ...cmdLineArgsFromOptions(options)
         ],
         {

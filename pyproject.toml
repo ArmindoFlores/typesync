@@ -1,14 +1,16 @@
 [project]
-version = "0.0.1a7"
+version = "0.0.1a8"
 name = "typesync"
 description = "Auto-generate TypeScript client code from Flask routes and Python type annotations."
 readme = "README.md"
 license-files = ["LICENSE"]
 dependencies = [
   "click",
+  "configargparse>=1.7.5",
   "flask",
   "inflection>=0.5.1",
   "prettytable>=3.17.0",
+  "pyyaml>=6.0.3",
 ]
 requires-python = ">= 3.12"
 authors = [
@@ -93,6 +95,7 @@ extend-ignore = [
   "RET504",
   "G004",
   "TRY400",
+  "TRY003",
 ]
 
 [tool.ruff.lint.per-file-ignores]
