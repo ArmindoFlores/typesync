@@ -120,6 +120,14 @@ class BaseTranslator(Translator):
         if node.value is None:
             return None
         translated_args = self._translate_args(node.args, generics)
+        # if not all generic arguments were specified, assume typing.Any
+        translated_args = (
+            *translated_args,
+            *[
+                TSSimpleType("any")
+                for _ in range(len(node.params) - len(translated_args))
+            ],
+        )
         return self._translate(
             node.value, dict(zip(node.params, translated_args, strict=True))
         )

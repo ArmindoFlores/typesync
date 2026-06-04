@@ -4,6 +4,7 @@ import sys
 from marshmallow import Schema, fields
 import pydantic
 
+from typesync.annotations import SkipGeneration
 from typesync.utils.marshmallow_utils import (
     MarshmallowSchemaDump,
     marshmallow_schema_dump,
@@ -91,7 +92,7 @@ class ArtistSchema(Schema):
     name = fields.Str(required=True)
     first_name = fields.Function(_first_name)
     age = fields.Method("_age")
-    date_birth = fields.Date()
+    date_birth = fields.Date(required=True)
     is_famous = fields.Bool()
 
     def _age(self, schema: dict) -> int | None:
@@ -110,3 +111,15 @@ def mm() -> MarshmallowSchemaDump[ArtistSchema]:
             "is_famous": False,
         },
     )
+
+
+@app.route("/mm", methods=("POST",))
+@with_json_body(loader=deferred(ArtistSchema().load))
+def mm_post(json: Loadable[ArtistSchema]) -> dict:
+    json.load()
+    return {}
+
+
+@app.route("/ignored")
+def ignored() -> SkipGeneration[int]:
+    return 1

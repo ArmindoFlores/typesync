@@ -70,6 +70,7 @@ class RouteTypeExtractor:
         self.inference_enabled = inference_enabled
         self.inference_can_eval = inference_can_eval
         self.skip_unannotated = skip_unannotated
+        self._should_skip = False
         self.logger = ClickLogger() if logger is None else logger
         self.translator_priorities = (
             {} if translator_priorities is None else translator_priorities
@@ -130,6 +131,10 @@ class RouteTypeExtractor:
                 1:
             ]
         )
+
+    @property
+    def should_skip(self):
+        return self._should_skip
 
     def parse_args_types(self) -> dict[HTTPMethod, TSType]:
         try:
@@ -241,12 +246,20 @@ class RouteTypeExtractor:
                 ctx.method = method
                 result, warning = self.translate_type(route_annotations, ctx)
 
-                if warning is not None and not ctx.inferred and self.inference_enabled:
+                if (
+                    warning is not None
+                    and not ctx.inferred
+                    and not ctx.should_skip
+                    and self.inference_enabled
+                ):
                     return self.parse_return_types(force_inference=True)
 
                 results[method] = result or TSSimpleType("any")
                 if warning is not None:
                     self.logger.warning(warning)
+
+            if ctx.should_skip:
+                self._should_skip = True
 
         except Exception as e:
             self.logger.error(

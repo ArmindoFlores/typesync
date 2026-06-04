@@ -1,7 +1,10 @@
 import typing
 
 from typesync.ts_types import TSArray, TSObject, TSRecord, TSSimpleType, TSTuple, TSType
-from typesync.utils.marshmallow_utils import MarshmallowSchemaDump
+from typesync.utils.marshmallow_utils import (
+    LoadedMarshmallowSchema,
+    MarshmallowSchemaDump,
+)
 from .abstract import Translator
 from .type_node import TypeNode, to_type_node
 
@@ -139,10 +142,30 @@ class MarshmallowTranslator(Translator):
             generics,
         )
 
+    def _filter_field(self, field) -> bool:
+        if field.dump_only and self.ctx.mode != "RETURN":
+            return False
+        if field.load_only and self.ctx.mode == "RETURN":  # noqa: SIM103
+            return False
+        return True
+
     def translate(
         self, node: TypeNode, generics: dict[typing.TypeVar, TSType] | None
     ) -> TSType | None:
-        if node.origin is MarshmallowSchemaDump and len(node.args) == 1:
+        if (
+            node.origin is MarshmallowSchemaDump
+            and len(node.args) == 1
+            and self.ctx.mode == "RETURN"
+        ):
+            # FIXME: error if ctx.mode is not correct
+            return self._translate(node.args[0], generics)
+
+        if (
+            node.origin is LoadedMarshmallowSchema
+            and len(node.args) == 1
+            and self.ctx.mode != "RETURN"
+        ):
+            # FIXME: error if ctx.mode is not correct
             return self._translate(node.args[0], generics)
 
         if isinstance(node.origin, self._marshmallow.Schema):
@@ -153,14 +176,14 @@ class MarshmallowTranslator(Translator):
         ):
             return None
 
-        keys = tuple(node.origin._declared_fields.keys())
-        value_types = tuple(
-            self._get_underlying_type(value, node, generics)
-            for value in node.origin._declared_fields.values()
+        key_value_required = tuple(
+            (key, self._get_underlying_type(field, node, generics), field.required)
+            for key, field in node.origin._declared_fields.items()
+            if self._filter_field(field)
         )
+        keys = tuple(key for key, *_ in key_value_required)
+        value_types = tuple(value for _, value, _ in key_value_required)
+        required = tuple(required for *_, required in key_value_required)
 
-        required = tuple(
-            value.required for value in node.origin._declared_fields.values()
-        )
         # TODO: Handle other Marshmallow properties
         return TSObject(keys, value_types, required)

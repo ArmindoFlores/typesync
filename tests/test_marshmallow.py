@@ -4,10 +4,13 @@ from flask import Flask
 from marshmallow import Schema, fields
 
 from typesync.ts_types import TSArray, TSObject, TSSimpleType, TSUnion
+from typesync.utils.base_utils import Loadable, deferred, with_json_body
 from typesync.utils.marshmallow_utils import (
+    LoadedMarshmallowSchema,
     MarshmallowSchemaDump,
     marshmallow_schema_dump,
-    Schema as CustomSchema, marshmallow_schema_dump_many
+    Schema as CustomSchema,
+    marshmallow_schema_dump_many,
 )
 
 from conftest import ParserFixture
@@ -43,6 +46,7 @@ def test_simple_model(app: Flask, return_parser: ParserFixture) -> None:
         required=(True, False, False, False),
     )
 
+
 def test_many(app: Flask, return_parser: ParserFixture) -> None:
     class ArtistSchema(Schema):
         name = fields.Str(required=True)
@@ -56,7 +60,9 @@ def test_many(app: Flask, return_parser: ParserFixture) -> None:
 
     assert return_parser(app, "main") == TSArray(
         TSObject(
-            keys=("name",), value_types=(TSSimpleType("string"),), required=(True,),
+            keys=("name",),
+            value_types=(TSSimpleType("string"),),
+            required=(True,),
         )
     )
 
@@ -66,7 +72,7 @@ def test_complex_model(app: Flask, return_parser: ParserFixture) -> None:
         name = fields.Str(required=True)
         age = fields.Integer()
         date_birth = fields.Date()
-        is_famous = fields.Bool()
+        is_famous = fields.Bool(load_only=True)
 
     class Song(Schema):
         name = fields.Str(required=True)
@@ -90,7 +96,6 @@ def test_complex_model(app: Flask, return_parser: ParserFixture) -> None:
                     "name": "John Doe",
                     "age": 25,
                     "date_birth": datetime.date(2001, 1, 1),
-                    "is_famous": False,
                 },
             },
         )
@@ -108,14 +113,13 @@ def test_complex_model(app: Flask, return_parser: ParserFixture) -> None:
                 )
             ),
             TSObject(
-                keys=("name", "age", "date_birth", "is_famous"),
+                keys=("name", "age", "date_birth"),
                 value_types=(
                     TSSimpleType("string"),
                     TSSimpleType("number"),
                     TSSimpleType("string"),
-                    TSSimpleType("boolean"),
                 ),
-                required=(True, False, False, False),
+                required=(True, False, False),
             ),
         ),
         required=(True, False, True, True),
@@ -180,11 +184,13 @@ def test_inferred(app: Flask, inf_return_parser: ParserFixture) -> None:
 
     @app.route("/main")
     def main():
-        return ArtistSchema().dump(obj={
-            "name": "John Doe",
-            "date_birth": datetime.date(2001, 1, 1),
-            "is_famous": False,
-        })
+        return ArtistSchema().dump(
+            obj={
+                "name": "John Doe",
+                "date_birth": datetime.date(2001, 1, 1),
+                "is_famous": False,
+            }
+        )
 
     assert inf_return_parser(app, "main") == TSObject(
         keys=("name", "first_name", "age", "date_birth", "is_famous"),
@@ -196,4 +202,28 @@ def test_inferred(app: Flask, inf_return_parser: ParserFixture) -> None:
             TSSimpleType("boolean"),
         ),
         required=(True, False, False, False, False),
+    )
+
+
+def test_json_body(app: Flask, json_body_parser: ParserFixture) -> None:
+    class ArtistSchema(Schema):
+        name = fields.Str(required=True)
+        age = fields.Integer(dump_only=True)
+        date_birth = fields.Date()
+        is_famous = fields.Bool()
+
+    @app.route("/main", methods=("POST",))
+    @with_json_body(loader=deferred(ArtistSchema().load))
+    def main(json: Loadable[LoadedMarshmallowSchema[ArtistSchema]]):
+        x = json.load()
+        return x
+
+    assert json_body_parser(app, "main") == TSObject(
+        keys=("name", "date_birth", "is_famous"),
+        value_types=(
+            TSSimpleType("string"),
+            TSSimpleType("string"),
+            TSSimpleType("boolean"),
+        ),
+        required=(True, False, False),
     )

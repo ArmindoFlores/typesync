@@ -22,7 +22,7 @@ Some features are already implemented, others are planned.
 - [x] Support for JSON request bodies with typed parameters
     - [x] Support validators such as pydantic
 - [x] Support for `typing.Annotated` to:
-    - [ ] Ignore specific routes
+    - [x] Ignore specific routes
     - [x] Customize generation behavior (naming, visibility, etc.)
 - [ ] Improved error reporting for unsupported or ambiguous annotations
 - [ ] Optional generation modes (types only, requests only)
@@ -31,7 +31,7 @@ Some features are already implemented, others are planned.
 - [x] Handle recursive types (such as `type RecursiveType = tuple[int, RecursiveType]`)*
 - [x] Support returning with `jsonify(...)`
 - [x] Support extensions via translators
-- [ ] Support different type translations depending on whether a type is the output or input of a view function
+- [x] Support different type translations depending on whether a type is the output or input of a view function
 - [ ] Handle decorated functions whose return type is changed
 
 \* Not all cases are supported.

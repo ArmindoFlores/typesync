@@ -32,6 +32,9 @@ class AnnotationsTranslator(Translator):
                 return self._translate_http_method_annotation(
                     node, annotation, generics
                 )
+            case annotations.TypesyncSkipGenerationAnnotation():
+                self.ctx.should_skip = True
+                return TSSimpleType("never")
 
         return self._translate(node, generics)
 

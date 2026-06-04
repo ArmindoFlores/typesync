@@ -86,6 +86,8 @@ class CodeWriter:
         names: list[str] = []
         for parser in parsers:
             return_types = parser.parse_return_types()
+            if parser.should_skip:
+                continue
             args_types = parser.parse_args_types()
             json_body_types = parser.parse_json_body()
 

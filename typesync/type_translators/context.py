@@ -14,3 +14,4 @@ class TranslationContext:
     method: HTTPMethod
     mode: typing.Literal["JSON", "RETURN", "ARGS"]
     inferred: bool
+    should_skip: bool = False

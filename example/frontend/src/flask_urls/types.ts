@@ -68,7 +68,7 @@ export interface MainPOSTArgsType extends RequestArgs {
     body?: _mainPOSTBody;
 }
 
-export type MmGETReturnType = {name: string; first_name?: string; age?: null | number; date_birth?: string; is_famous?: boolean;};
+export type MmGETReturnType = {name: string; first_name?: string; age?: null | number; date_birth: string; is_famous?: boolean;};
 type _mmGETArgs = undefined;
 type _mmGETBody = undefined;
 export interface MmGETArgsType extends RequestArgs {
@@ -76,7 +76,7 @@ export interface MmGETArgsType extends RequestArgs {
     body?: _mmGETBody;
 }
 
-export type MmHEADReturnType = {name: string; first_name?: string; age?: null | number; date_birth?: string; is_famous?: boolean;};
+export type MmHEADReturnType = {name: string; first_name?: string; age?: null | number; date_birth: string; is_famous?: boolean;};
 type _mmHEADArgs = undefined;
 type _mmHEADBody = undefined;
 export interface MmHEADArgsType extends RequestArgs {
@@ -84,12 +84,28 @@ export interface MmHEADArgsType extends RequestArgs {
     body?: _mmHEADBody;
 }
 
-export type MmOPTIONSReturnType = {name: string; first_name?: string; age?: null | number; date_birth?: string; is_famous?: boolean;};
+export type MmOPTIONSReturnType = {name: string; first_name?: string; age?: null | number; date_birth: string; is_famous?: boolean;};
 type _mmOPTIONSArgs = undefined;
 type _mmOPTIONSBody = undefined;
 export interface MmOPTIONSArgsType extends RequestArgs {
     args?: _mmOPTIONSArgs;
     body?: _mmOPTIONSBody;
+}
+
+export type MmPostOPTIONSReturnType = object;
+type _mm_postOPTIONSArgs = undefined;
+type _mm_postOPTIONSBody = {name: string; date_birth: string; is_famous?: boolean;};
+export interface MmPostOPTIONSArgsType extends RequestArgs {
+    args?: _mm_postOPTIONSArgs;
+    body: _mm_postOPTIONSBody;
+}
+
+export type MmPostPOSTReturnType = object;
+type _mm_postPOSTArgs = undefined;
+type _mm_postPOSTBody = {name: string; date_birth: string; is_famous?: boolean;};
+export interface MmPostPOSTArgsType extends RequestArgs {
+    args?: _mm_postPOSTArgs;
+    body: _mm_postPOSTBody;
 }
 
 export type PydanticOPTIONSReturnType = Record<string, [boolean[], number[]]>;
