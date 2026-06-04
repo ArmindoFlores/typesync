@@ -94,7 +94,7 @@ export interface MmOPTIONSArgsType extends RequestArgs {
 
 export type MmPostOPTIONSReturnType = object;
 type _mm_postOPTIONSArgs = undefined;
-type _mm_postOPTIONSBody = {name: string; date_birth: string; is_famous?: boolean;};
+type _mm_postOPTIONSBody = any;
 export interface MmPostOPTIONSArgsType extends RequestArgs {
     args?: _mm_postOPTIONSArgs;
     body: _mm_postOPTIONSBody;
@@ -102,7 +102,7 @@ export interface MmPostOPTIONSArgsType extends RequestArgs {
 
 export type MmPostPOSTReturnType = object;
 type _mm_postPOSTArgs = undefined;
-type _mm_postPOSTBody = {name: string; date_birth: string; is_famous?: boolean;};
+type _mm_postPOSTBody = any;
 export interface MmPostPOSTArgsType extends RequestArgs {
     args?: _mm_postPOSTArgs;
     body: _mm_postPOSTBody;

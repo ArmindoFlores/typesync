@@ -33,7 +33,7 @@ class AnnotationsTranslator(Translator):
                     node, annotation, generics
                 )
             case annotations.TypesyncSkipGenerationAnnotation():
-                self.ctx.should_skip = True
+                self._skip_route()
                 return TSSimpleType("never")
 
         return self._translate(node, generics)

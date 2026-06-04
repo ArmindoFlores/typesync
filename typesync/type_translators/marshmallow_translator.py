@@ -152,20 +152,21 @@ class MarshmallowTranslator(Translator):
     def translate(
         self, node: TypeNode, generics: dict[typing.TypeVar, TSType] | None
     ) -> TSType | None:
-        if (
-            node.origin is MarshmallowSchemaDump
-            and len(node.args) == 1
-            and self.ctx.mode == "RETURN"
-        ):
-            # FIXME: error if ctx.mode is not correct
+        if node.origin is MarshmallowSchemaDump and len(node.args) == 1:
+            if self.ctx.mode != "RETURN":
+                self._logger.error(
+                    "'MarshmallowSchemaDump' is only valid as a route's return value"
+                )
+                print("ctx", self.ctx)
+                return None
             return self._translate(node.args[0], generics)
 
-        if (
-            node.origin is LoadedMarshmallowSchema
-            and len(node.args) == 1
-            and self.ctx.mode != "RETURN"
-        ):
-            # FIXME: error if ctx.mode is not correct
+        if node.origin is LoadedMarshmallowSchema and len(node.args) == 1:
+            if self.ctx.mode == "RETURN":
+                self._logger.error(
+                    "'LoadedMarshmallowSchema' is not valid as a route's return value"
+                )
+                return None
             return self._translate(node.args[0], generics)
 
         if isinstance(node.origin, self._marshmallow.Schema):

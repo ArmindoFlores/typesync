@@ -13,7 +13,7 @@ from typesync.utils.marshmallow_utils import (
     marshmallow_schema_dump_many,
 )
 
-from conftest import ParserFixture
+from conftest import ParserFixture, PytestLogger
 
 
 def test_simple_model(app: Flask, return_parser: ParserFixture) -> None:
@@ -226,4 +226,27 @@ def test_json_body(app: Flask, json_body_parser: ParserFixture) -> None:
             TSSimpleType("boolean"),
         ),
         required=(True, False, False),
+    )
+
+
+def test_wrong_type(
+    app: Flask, json_body_parser: ParserFixture, logger: PytestLogger
+) -> None:
+    class ArtistSchema(Schema):
+        name = fields.Str(required=True)
+        age = fields.Integer(dump_only=True)
+        date_birth = fields.Date()
+        is_famous = fields.Bool()
+
+    @app.route("/main", methods=("POST",))
+    @with_json_body(loader=deferred(ArtistSchema().load))
+    def main(json: Loadable[MarshmallowSchemaDump[ArtistSchema]]):
+        x = json.load()
+        return x
+
+    json_body_parser(app, "main", logger)
+
+    assert len(logger.error_calls) == 1
+    assert logger.error_calls[0] == (
+        "'MarshmallowSchemaDump' is only valid as a route's return value"
     )

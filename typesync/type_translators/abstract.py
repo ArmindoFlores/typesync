@@ -6,6 +6,7 @@ if typing.TYPE_CHECKING:
     from . import TypeNode
     from .context import TranslationContext
     from typesync.ts_types import TSType
+    from typesync.codegen.extractor import Logger
 
 
 class Translator(abc.ABC):
@@ -18,10 +19,14 @@ class Translator(abc.ABC):
             ["TypeNode", dict[typing.TypeVar, "TSType"] | None], "TSType"
         ],
         get_type: typing.Callable[[typing.Callable], "TypeNode | None"],
+        skip_route: typing.Callable[[], None],
+        logger: "Logger",
         ctx: "TranslationContext",
     ) -> None:
         self._translate = translate
         self._get_type = get_type
+        self._skip_route = skip_route
+        self._logger = logger
         self.ctx = ctx
 
     @abc.abstractmethod

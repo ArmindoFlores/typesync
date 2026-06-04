@@ -64,6 +64,7 @@ class RouteTypeExtractor:
         inference_can_eval: bool = False,
         skip_unannotated: bool = True,
         logger: Logger | None = None,
+        methods: set[HTTPMethod] | None = None,
     ) -> None:
         self.app = app
         self.rule = rule
@@ -72,6 +73,7 @@ class RouteTypeExtractor:
         self.skip_unannotated = skip_unannotated
         self._should_skip = False
         self.logger = ClickLogger() if logger is None else logger
+        self.methods = methods
         self.translator_priorities = (
             {} if translator_priorities is None else translator_priorities
         )
@@ -149,6 +151,8 @@ class RouteTypeExtractor:
 
             results: dict[HTTPMethod, TSType] = {}
             for method in self.rule.methods or set():
+                if self.methods is not None and method not in self.methods:
+                    continue
                 types: list[tuple[str, TSType]] = [
                     (arg, self._get_converter_type(arg, converter, method))
                     for arg, converter in used_converters.items()
@@ -187,8 +191,11 @@ class RouteTypeExtractor:
             )
             return TSSimpleType("any")
 
+        def skip_route() -> None:
+            self._should_skip = True
+
         translators = [
-            Translator(translate, self.get_return_type, ctx)
+            Translator(translate, self.get_return_type, skip_route, self.logger, ctx)
             for Translator in self.translators
         ]
         node = to_type_node(type_)
@@ -243,13 +250,15 @@ class RouteTypeExtractor:
 
             results: dict[HTTPMethod, TSType] = {}
             for method in self.rule.methods or set():
+                if self.methods is not None and method not in self.methods:
+                    continue
                 ctx.method = method
                 result, warning = self.translate_type(route_annotations, ctx)
 
                 if (
                     warning is not None
                     and not ctx.inferred
-                    and not ctx.should_skip
+                    and not self.should_skip
                     and self.inference_enabled
                 ):
                     return self.parse_return_types(force_inference=True)
@@ -257,9 +266,6 @@ class RouteTypeExtractor:
                 results[method] = result or TSSimpleType("any")
                 if warning is not None:
                     self.logger.warning(warning)
-
-            if ctx.should_skip:
-                self._should_skip = True
 
         except Exception as e:
             self.logger.error(
@@ -297,6 +303,9 @@ class RouteTypeExtractor:
             results: dict[HTTPMethod, TSType] = {}
 
             for method in self.rule.methods or set():
+                if self.methods is not None and method not in self.methods:
+                    continue
+                ctx.method = method
                 json_body_type, warning = self.translate_type(
                     json_body_annotations, ctx
                 )
