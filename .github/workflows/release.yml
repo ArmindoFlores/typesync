@@ -34,6 +34,9 @@ jobs:
 
     runs-on: ubuntu-latest
     environment: release
+    defaults:
+      run:
+        working-directory: rollup-plugin-typesync
     steps:
       - uses: actions/checkout@v4
 
