@@ -14,6 +14,7 @@ interface OptionalTypesyncPluginOptions {
     translators: string[];
     translatorPriorities: Record<string, number>;
     skipUnannotated: boolean;
+    requireExtraArgs: boolean;
     inference: boolean;
     inferenceCanEval: boolean;
     typesFileName: string;
@@ -44,6 +45,9 @@ function cmdLineArgsFromOptions(options: Partial<OptionalTypesyncPluginOptions>)
     }
     if (options.skipUnannotated === false) {
         args.push("--skip-unannotated=false")
+    }
+    if (options.requireExtraArgs === true) {
+        args.push("--require-extra-args")
     }
     if (options.inference) {
         args.push("-i")
