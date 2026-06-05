@@ -84,6 +84,7 @@ class CodeWriter:
         self._write_types_header()
         self._write_api_header()
         names: list[str] = []
+        endpoints_and_methods: dict[str, set[str]] = {}
         for parser in parsers:
             return_types = parser.parse_return_types()
             if parser.should_skip:
@@ -102,6 +103,9 @@ class CodeWriter:
                 has_args,
                 has_json,
             ) in self._write_types(parser.rule_name, types_per_method):
+                if method in endpoints_and_methods.get(parser.rule_name, set()):
+                    continue
+                endpoints_and_methods.setdefault(parser.rule_name, set()).add(method)
                 names.append(
                     self._write_api_function(
                         parser.rule_name,
