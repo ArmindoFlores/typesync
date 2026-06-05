@@ -105,7 +105,7 @@ def split_parsed_from_unparsed_params(
 
 def find_config_file(locations: Iterable[str]) -> pathlib.Path | None:
     for location in locations:
-        path = pathlib.Path(location)
+        path = pathlib.Path(location).resolve()
         if path.is_file():
             return path
     return None

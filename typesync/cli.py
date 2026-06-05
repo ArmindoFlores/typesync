@@ -15,7 +15,10 @@ cli = AppGroup("typesync")
 
 @cli.command(help="Generate Typescript types based on Flask routes.")
 @click.argument(
-    "out_dir", default=None, type=click.Path(file_okay=False, resolve_path=True)
+    "out_dir",
+    default=None,
+    required=False,
+    type=click.Path(file_okay=False, resolve_path=True),
 )
 @click.option("--endpoint", "-E", help="The base endpoint.", default="")
 @click.option("--samefile", "-S", help="Write types and apis to the same file.")
