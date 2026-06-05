@@ -122,7 +122,7 @@ cli = AppGroup("typesync")
 )
 @click.option(
     "--config",
-    type=click.Path(file_okay=False, resolve_path=True),
+    type=click.Path(dir_okay=False, resolve_path=True),
     help="A config file to be used in addition to the command line arguments.",
 )
 @click.pass_context
