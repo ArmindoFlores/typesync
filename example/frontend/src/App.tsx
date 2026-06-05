@@ -1,17 +1,14 @@
 import "./App.css";
 
 import { API } from "./api";
-import type { WithArgsReturnType } from "./flask_urls/types";
+import type { MmGETReturnType } from "./flask_urls/types";
 import { useState } from "react";
 
 export default function App() {
-    const [endpointReturnValue, setEndpointReturnValue] = useState<WithArgsReturnType>();
+    const [endpointReturnValue, setEndpointReturnValue] = useState<MmGETReturnType>();
 
     const requestEndpoint = async () => {
-        const result = await API.getWithArgs({
-            args: { arg: true },
-            headers: { "X-Header": "test" }
-        });
+        const result = await API.getMm({});
         setEndpointReturnValue(result);
     }
 

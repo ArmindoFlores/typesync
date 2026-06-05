@@ -73,8 +73,8 @@ class CodeWriter:
         return {
             method: TypesDict(
                 return_type=return_types.get(method, TSSimpleType("undefined")),
-                args_type=args_types.get(method, TSSimpleType("undefined")),
-                json_body_type=json_body_types.get(method, TSSimpleType("undefined")),
+                args_type=args_types.get(method, TSSimpleType("never")),
+                json_body_type=json_body_types.get(method, TSSimpleType("never")),
             )
             for method in sorted(methods)
         }
@@ -205,10 +205,10 @@ class CodeWriter:
                 f"export type {return_type_name} = {generated_return_type};\n"
             )
             params_type_name = self._params_type_name(rule_name, method)
-            optional_args = "?" if types["args_type"] == "undefined" else ""
+            optional_args = "?" if types["args_type"] == "never" else ""
             json_body_type = types["json_body_type"]
             optional_body = (
-                "?" if json_body_type is None or json_body_type == "undefined" else ""
+                "?" if json_body_type is None or json_body_type == "never" else ""
             )
 
             internal_args_name = f"_{rule_name}{method}Args"
@@ -219,7 +219,7 @@ class CodeWriter:
 
             internal_body_name = f"_{rule_name}{method}Body"
             string_json_body_type = (
-                "undefined"
+                "never"
                 if types["json_body_type"] is None
                 else types["json_body_type"].generate(internal_body_name)
             )

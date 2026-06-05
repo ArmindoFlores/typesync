@@ -7,7 +7,7 @@ import pydantic
 from typesync.annotations import SkipGeneration
 from typesync.utils.marshmallow_utils import (
     MarshmallowSchemaDump,
-    marshmallow_schema_dump,
+    marshmallow_schema_dump, LoadedMarshmallowSchema,
 )
 
 sys.path.append("../..")
@@ -115,11 +115,11 @@ def mm() -> MarshmallowSchemaDump[ArtistSchema]:
 
 @app.route("/mm", methods=("POST",))
 @with_json_body(loader=deferred(ArtistSchema().load))
-def mm_post(json: Loadable[ArtistSchema]) -> dict:
+def mm_post(json: Loadable[LoadedMarshmallowSchema[ArtistSchema]]) -> dict:
     json.load()
     return {}
 
 
 @app.route("/ignored")
-def ignored() -> SkipGeneration[int]:
-    return 1
+def ignored() -> SkipGeneration[str]:
+    return "ignored"

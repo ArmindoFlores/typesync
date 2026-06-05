@@ -157,7 +157,6 @@ class MarshmallowTranslator(Translator):
                 self._logger.error(
                     "'MarshmallowSchemaDump' is only valid as a route's return value"
                 )
-                print("ctx", self.ctx)
                 return None
             return self._translate(node.args[0], generics)
 

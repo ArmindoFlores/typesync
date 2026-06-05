@@ -161,7 +161,7 @@ class RouteTypeExtractor:
                 results[method] = (
                     TSObject([t[0] for t in types], [t[1] for t in types])
                     if len(types) > 0
-                    else TSSimpleType("undefined")
+                    else TSSimpleType("never")
                 )
 
         except Exception as e:
