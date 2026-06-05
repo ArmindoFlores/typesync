@@ -513,7 +513,7 @@ wheels = [
 
 [[package]]
 name = "typesync"
-version = "0.0.1a8"
+version = "0.0.1a9"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
