@@ -96,6 +96,15 @@ class CodeWriter:
                 return_types, args_types, json_body_types
             )
 
+            types_per_method = {
+                method: types for method, types in types_per_method.items()
+                if method not in endpoints_and_methods.get(parser.rule_name, set())
+            }
+
+            endpoints_and_methods.setdefault(
+                parser.rule_name, set()
+            ).update(types_per_method.keys())
+
             for (
                 method,
                 return_type_name,
@@ -103,9 +112,6 @@ class CodeWriter:
                 has_args,
                 has_json,
             ) in self._write_types(parser.rule_name, types_per_method):
-                if method in endpoints_and_methods.get(parser.rule_name, set()):
-                    continue
-                endpoints_and_methods.setdefault(parser.rule_name, set()).add(method)
                 names.append(
                     self._write_api_function(
                         parser.rule_name,
