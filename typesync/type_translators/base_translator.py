@@ -1,6 +1,7 @@
 import types
 import typing
 
+
 from .abstract import Translator
 from .type_node import TypeNode, RecursiveCall
 from typesync.ts_types import (
@@ -15,6 +16,7 @@ from typesync.ts_types import (
     is_signal,
 )
 from typesync.utils import Loadable
+from typesync.utils.base_utils import Array
 
 
 class BaseTranslator(Translator):
@@ -71,6 +73,7 @@ class BaseTranslator(Translator):
             dict,
             list,
             tuple,
+            Array,
             types.UnionType,
             typing.Union,
         }:
@@ -93,6 +96,9 @@ class BaseTranslator(Translator):
                 return TSArray(TSSimpleType("any"))
             if is_signal(translated_args[-1]) and len(translated_args) == 2:
                 return TSArray(translated_args[0])
+            return TSTuple(translated_args)
+    
+        if node.origin is Array and len(translated_args) >= 1:
             return TSTuple(translated_args)
 
         if node.origin is types.UnionType or node.origin is typing.Union:

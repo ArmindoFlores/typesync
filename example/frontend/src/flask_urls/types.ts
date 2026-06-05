@@ -38,6 +38,30 @@ export interface Complex_OPTIONSArgsType extends RequestArgs {
     body?: _complex_OPTIONSBody;
 }
 
+export type InferenceGETReturnType = object;
+type _inferenceGETArgs = never;
+type _inferenceGETBody = never;
+export interface InferenceGETArgsType extends RequestArgs {
+    args?: _inferenceGETArgs;
+    body?: _inferenceGETBody;
+}
+
+export type InferenceHEADReturnType = object;
+type _inferenceHEADArgs = never;
+type _inferenceHEADBody = never;
+export interface InferenceHEADArgsType extends RequestArgs {
+    args?: _inferenceHEADArgs;
+    body?: _inferenceHEADBody;
+}
+
+export type InferenceOPTIONSReturnType = object;
+type _inferenceOPTIONSArgs = never;
+type _inferenceOPTIONSBody = never;
+export interface InferenceOPTIONSArgsType extends RequestArgs {
+    args?: _inferenceOPTIONSArgs;
+    body?: _inferenceOPTIONSBody;
+}
+
 export type MainGETReturnType = {result: [boolean | null, number | string]; x?: number; y?: boolean;};
 type _mainGETArgs = never;
 type _mainGETBody = never;

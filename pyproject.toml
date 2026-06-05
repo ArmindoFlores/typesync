@@ -53,7 +53,7 @@ marshmallow = [
 invalid-type-form = "ignore"
 
 [tool.ty.src]
-exclude = ["tests"]
+exclude = ["tests", "typesync/codegen/inference/stubs/*"]
 
 [tool.ruff.lint]
 extend-select = [

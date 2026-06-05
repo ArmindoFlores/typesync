@@ -35,6 +35,33 @@ export function makeAPI<ExtraArgsType = unknown>(requestFn: types.RequestFunctio
         );
     }
 
+    async function getInference(params: types.InferenceGETArgsType, extra?: ExtraArgsType): Promise<types.InferenceGETReturnType> {
+        const endpoint = "/inference";
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params},
+            extra,
+        );
+    }
+
+    async function headInference(params: types.InferenceHEADArgsType, extra?: ExtraArgsType): Promise<types.InferenceHEADReturnType> {
+        const endpoint = "/inference";
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params},
+            extra,
+        );
+    }
+
+    async function optionsInference(params: types.InferenceOPTIONSArgsType, extra?: ExtraArgsType): Promise<types.InferenceOPTIONSReturnType> {
+        const endpoint = "/inference";
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params},
+            extra,
+        );
+    }
+
     async function getMain(params: types.MainGETArgsType, extra?: ExtraArgsType): Promise<types.MainGETReturnType> {
         const endpoint = "/main";
         return await requestFn(
@@ -192,6 +219,9 @@ export function makeAPI<ExtraArgsType = unknown>(requestFn: types.RequestFunctio
         getComplex_,
         headComplex_,
         optionsComplex_,
+        getInference,
+        headInference,
+        optionsInference,
         getMain,
         headMain,
         optionsMain,

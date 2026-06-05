@@ -123,3 +123,7 @@ def mm_post(json: Loadable[LoadedMarshmallowSchema[ArtistSchema]]) -> dict:
 @app.route("/ignored")
 def ignored() -> SkipGeneration[str]:
     return "ignored"
+
+@app.route("/inference")
+def inference():
+    return flask.jsonify(name="hello")

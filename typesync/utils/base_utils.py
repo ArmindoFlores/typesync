@@ -13,6 +13,9 @@ from collections.abc import Callable
 import flask
 
 
+class Array[*T](tuple[*T]): ...
+
+
 class Response[T](flask.Response):
     """A typed `flask.Response`.
     This exists to let `typesync` know the response contains JSON shaped like T.

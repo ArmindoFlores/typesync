@@ -1,3 +1,6 @@
+from typesync.codegen.inference.extensions import Infer
+from typesync.codegen.inference.stubs import get_stub_module
+import pathlib
 import ast
 import builtins
 import inspect
@@ -6,7 +9,7 @@ import types
 import typing
 
 if typing.TYPE_CHECKING:
-    from .extractor import Logger
+    from typesync.codegen.extractor import Logger
 
 
 def unwrap_generics(tp, generics: dict[typing.TypeVar, typing.Any]):
@@ -52,6 +55,37 @@ class ASTVisitor(ast.NodeVisitor):
         self.can_eval = can_eval
         self.locals: dict[str, typing.Any] = {}
         self.returns: list = []
+        self.stubs: dict[str, types.ModuleType | None] = {}
+
+    def get_stubbed_function_type(
+        self, function: typing.Callable, name: str, fargs: list[ast.expr], fkeywords: list[ast.keyword]
+    ) -> typing.Any | None:
+        module = getattr(function, "__module__", None)
+        if module is None:
+            return None
+        if module not in self.stubs:
+            self.stubs[module] = get_stub_module(module)
+
+        stub = self.stubs.get(module)
+        if stub is None:
+            return None
+
+        stubbed_function = getattr(stub, name, None)
+        if stubbed_function is None:
+            return None
+        
+        annotations = typing.get_type_hints(stubbed_function)
+        if "return" not in annotations:
+            return None
+        
+        if annotations["return"] is Infer:
+            # returns an object with the correct type
+            return stubbed_function(
+                self.get_value,
+                fargs,
+                {keyword.arg: keyword.value for keyword in fkeywords}
+            )
+        return annotations["return"]
 
     def get_variable(self, name: ast.Name) -> typing.Any:
         local_var = self.locals.get(name.id, None)
@@ -135,8 +169,13 @@ class ASTVisitor(ast.NodeVisitor):
                 return self.get_dict(expr)
             case ast.Call():
                 return self.infer_call_type(expr)
+            case ast.Starred():
+                return self.get_starred(expr)
             case _:
                 return None
+            
+    def get_starred(self, expr: ast.Starred) -> typing.Any:
+        return self.get_value(expr.value)
 
     def get_argument_dict(
         self, func: typing.Callable, args: list[ast.expr], keywords: list[ast.keyword]
@@ -190,7 +229,7 @@ class ASTVisitor(ast.NodeVisitor):
 
         return return_type
 
-    def from_method_call(self, method: ast.Attribute) -> typing.Any:
+    def from_method_call(self, method: ast.Attribute, fargs: list[ast.expr], fkeywords: list[ast.keyword]) -> typing.Any:
         value = self.get_value(method.value)
         if value is None:
             return None
@@ -198,6 +237,11 @@ class ASTVisitor(ast.NodeVisitor):
         func = getattr(value, method.attr, None)
         if func is None or not callable(func):
             return None
+
+        stubbed_function_type = self.get_stubbed_function_type(func, method.attr, fargs, fkeywords)
+        if stubbed_function_type is not None:
+            return stubbed_function_type
+
         annotations = getattr(func, "__annotations__", {})
         if "return" not in annotations:
             return infer_return_type(func, self.logger, self.can_eval)
@@ -212,7 +256,7 @@ class ASTVisitor(ast.NodeVisitor):
             case ast.Name():
                 return self.from_func_call(callable_, call.args, call.keywords)
             case ast.Attribute():
-                return self.from_method_call(callable_)
+                return self.from_method_call(callable_, call.args, call.keywords)
             case _:
                 return None
 
