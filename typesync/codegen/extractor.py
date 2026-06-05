@@ -124,7 +124,7 @@ class RouteTypeExtractor:
 
     @property
     def rule_name(self) -> str:
-        return self.rule.endpoint.replace(".", "_")
+        return self.rule.endpoint.replace(".", "_").replace("-", "_")
 
     @property
     def rule_url(self) -> str:
