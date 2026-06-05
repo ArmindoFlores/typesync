@@ -38,6 +38,7 @@ class CodeWriter:
         function_name_format: str,
         endpoint: str = "",
         stop_on_error: bool = False,
+        require_extra_args: bool = False,
     ) -> None:
         self.types_file = types_file
         self.api_file = api_file
@@ -47,6 +48,7 @@ class CodeWriter:
         self.function_name_format = function_name_format
         self.endpoint = endpoint
         self.stop_on_error = stop_on_error
+        self.require_extra_args = require_extra_args
 
     def _api_function_name(self, rule_name: str, method: str) -> str:
         return self.function_name_format.format_map(
@@ -139,8 +141,10 @@ class CodeWriter:
             "}\n\n"
         )
         self.types_file.write(
-            "export type RequestFunction = (\n"
-            "    endpoint: string, options: RequestOptions\n"
+            "export type RequestFunction<ExtraArgsType> = (\n"
+            "    endpoint: string,\n"
+            "    options: RequestOptions,\n"
+            f"    extra{'' if self.require_extra_args else '?'}: ExtraArgsType,\n"
             "// eslint-disable-next-line @typescript-eslint/no-explicit-any\n"
             ") => Promise<any>;"
             "\n\n"
@@ -157,7 +161,9 @@ class CodeWriter:
             "}\n\n",
         )
         self.api_file.write(
-            "export function makeAPI(requestFn: types.RequestFunction) {\n"
+            "export function makeAPI<ExtraArgsType = unknown>("
+            "requestFn: types.RequestFunction<ExtraArgsType>"
+            ") {\n"
         )
 
     def _write_api_footer(self, names: list[str]) -> None:
@@ -183,11 +189,12 @@ class CodeWriter:
         params = f"params: types.{args_type_name}"
         f_name = self._api_function_name(rule_name, method)
         self.api_file.write(
-            f"    async function {f_name}({params}): Promise<types.{return_type_name}> {{\n"  # noqa: E501
+            f"    async function {f_name}({params}, extra{'' if self.require_extra_args else '?'}: ExtraArgsType): Promise<types.{return_type_name}> {{\n"  # noqa: E501
             f"        const endpoint = {build_url};\n"
             "        return await requestFn(\n"
             "            endpoint,\n"
-            '            {method: "' + method + '", ...params}\n'
+            '            {method: "' + method + '", ...params},\n'
+            "            extra,\n"
             "        );\n"
             "    }\n\n",
         )

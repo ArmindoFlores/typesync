@@ -23,6 +23,11 @@ cli = AppGroup("typesync")
 @click.option("--endpoint", "-E", help="The base endpoint.", default="")
 @click.option("--samefile", "-S", help="Write types and apis to the same file.")
 @click.option(
+    "--require-extra-args",
+    is_flag=True,
+    help="Make the 'extra' argument for each request required.",
+)
+@click.option(
     "--translator",
     "-t",
     "translators",
@@ -156,6 +161,7 @@ def generate(ctx: click.Context, **_):
             params.args_type_format,
             params.function_name_format,
             params.endpoint,
+            require_extra_args=params.require_extra_args,
         )
         result = code_writer.write(
             RouteTypeExtractor(

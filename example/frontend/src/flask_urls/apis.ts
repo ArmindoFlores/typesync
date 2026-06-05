@@ -7,164 +7,184 @@ export function buildUrl(rule: string, params: Record<string, any>) {
     });
 }
 
-export function makeAPI(requestFn: types.RequestFunction) {
-    async function getComplex_(params: types.Complex_GETArgsType): Promise<types.Complex_GETReturnType> {
+export function makeAPI<ExtraArgsType = unknown>(requestFn: types.RequestFunction<ExtraArgsType>) {
+    async function getComplex_(params: types.Complex_GETArgsType, extra?: ExtraArgsType): Promise<types.Complex_GETReturnType> {
         const endpoint = "/complex";
         return await requestFn(
             endpoint,
-            {method: "GET", ...params}
+            {method: "GET", ...params},
+            extra,
         );
     }
 
-    async function headComplex_(params: types.Complex_HEADArgsType): Promise<types.Complex_HEADReturnType> {
+    async function headComplex_(params: types.Complex_HEADArgsType, extra?: ExtraArgsType): Promise<types.Complex_HEADReturnType> {
         const endpoint = "/complex";
         return await requestFn(
             endpoint,
-            {method: "HEAD", ...params}
+            {method: "HEAD", ...params},
+            extra,
         );
     }
 
-    async function optionsComplex_(params: types.Complex_OPTIONSArgsType): Promise<types.Complex_OPTIONSReturnType> {
+    async function optionsComplex_(params: types.Complex_OPTIONSArgsType, extra?: ExtraArgsType): Promise<types.Complex_OPTIONSReturnType> {
         const endpoint = "/complex";
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "OPTIONS", ...params},
+            extra,
         );
     }
 
-    async function getMain(params: types.MainGETArgsType): Promise<types.MainGETReturnType> {
+    async function getMain(params: types.MainGETArgsType, extra?: ExtraArgsType): Promise<types.MainGETReturnType> {
         const endpoint = "/main";
         return await requestFn(
             endpoint,
-            {method: "GET", ...params}
+            {method: "GET", ...params},
+            extra,
         );
     }
 
-    async function headMain(params: types.MainHEADArgsType): Promise<types.MainHEADReturnType> {
+    async function headMain(params: types.MainHEADArgsType, extra?: ExtraArgsType): Promise<types.MainHEADReturnType> {
         const endpoint = "/main";
         return await requestFn(
             endpoint,
-            {method: "HEAD", ...params}
+            {method: "HEAD", ...params},
+            extra,
         );
     }
 
-    async function optionsMain(params: types.MainOPTIONSArgsType): Promise<types.MainOPTIONSReturnType> {
+    async function optionsMain(params: types.MainOPTIONSArgsType, extra?: ExtraArgsType): Promise<types.MainOPTIONSReturnType> {
         const endpoint = "/main";
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "OPTIONS", ...params},
+            extra,
         );
     }
 
-    async function postMain(params: types.MainPOSTArgsType): Promise<types.MainPOSTReturnType> {
+    async function postMain(params: types.MainPOSTArgsType, extra?: ExtraArgsType): Promise<types.MainPOSTReturnType> {
         const endpoint = "/main";
         return await requestFn(
             endpoint,
-            {method: "POST", ...params}
+            {method: "POST", ...params},
+            extra,
         );
     }
 
-    async function getMm(params: types.MmGETArgsType): Promise<types.MmGETReturnType> {
+    async function getMm(params: types.MmGETArgsType, extra?: ExtraArgsType): Promise<types.MmGETReturnType> {
         const endpoint = "/mm";
         return await requestFn(
             endpoint,
-            {method: "GET", ...params}
+            {method: "GET", ...params},
+            extra,
         );
     }
 
-    async function headMm(params: types.MmHEADArgsType): Promise<types.MmHEADReturnType> {
+    async function headMm(params: types.MmHEADArgsType, extra?: ExtraArgsType): Promise<types.MmHEADReturnType> {
         const endpoint = "/mm";
         return await requestFn(
             endpoint,
-            {method: "HEAD", ...params}
+            {method: "HEAD", ...params},
+            extra,
         );
     }
 
-    async function optionsMm(params: types.MmOPTIONSArgsType): Promise<types.MmOPTIONSReturnType> {
+    async function optionsMm(params: types.MmOPTIONSArgsType, extra?: ExtraArgsType): Promise<types.MmOPTIONSReturnType> {
         const endpoint = "/mm";
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "OPTIONS", ...params},
+            extra,
         );
     }
 
-    async function optionsMmPost(params: types.MmPostOPTIONSArgsType): Promise<types.MmPostOPTIONSReturnType> {
+    async function optionsMmPost(params: types.MmPostOPTIONSArgsType, extra?: ExtraArgsType): Promise<types.MmPostOPTIONSReturnType> {
         const endpoint = "/mm";
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "OPTIONS", ...params},
+            extra,
         );
     }
 
-    async function postMmPost(params: types.MmPostPOSTArgsType): Promise<types.MmPostPOSTReturnType> {
+    async function postMmPost(params: types.MmPostPOSTArgsType, extra?: ExtraArgsType): Promise<types.MmPostPOSTReturnType> {
         const endpoint = "/mm";
         return await requestFn(
             endpoint,
-            {method: "POST", ...params}
+            {method: "POST", ...params},
+            extra,
         );
     }
 
-    async function optionsPydantic(params: types.PydanticOPTIONSArgsType): Promise<types.PydanticOPTIONSReturnType> {
+    async function optionsPydantic(params: types.PydanticOPTIONSArgsType, extra?: ExtraArgsType): Promise<types.PydanticOPTIONSReturnType> {
         const endpoint = "/pydantic";
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "OPTIONS", ...params},
+            extra,
         );
     }
 
-    async function postPydantic(params: types.PydanticPOSTArgsType): Promise<types.PydanticPOSTReturnType> {
+    async function postPydantic(params: types.PydanticPOSTArgsType, extra?: ExtraArgsType): Promise<types.PydanticPOSTReturnType> {
         const endpoint = "/pydantic";
         return await requestFn(
             endpoint,
-            {method: "POST", ...params}
+            {method: "POST", ...params},
+            extra,
         );
     }
 
-    async function getStatic(params: types.StaticGETArgsType): Promise<types.StaticGETReturnType> {
+    async function getStatic(params: types.StaticGETArgsType, extra?: ExtraArgsType): Promise<types.StaticGETReturnType> {
         const endpoint = buildUrl("/static/<filename>", params.args);
         return await requestFn(
             endpoint,
-            {method: "GET", ...params}
+            {method: "GET", ...params},
+            extra,
         );
     }
 
-    async function headStatic(params: types.StaticHEADArgsType): Promise<types.StaticHEADReturnType> {
+    async function headStatic(params: types.StaticHEADArgsType, extra?: ExtraArgsType): Promise<types.StaticHEADReturnType> {
         const endpoint = buildUrl("/static/<filename>", params.args);
         return await requestFn(
             endpoint,
-            {method: "HEAD", ...params}
+            {method: "HEAD", ...params},
+            extra,
         );
     }
 
-    async function optionsStatic(params: types.StaticOPTIONSArgsType): Promise<types.StaticOPTIONSReturnType> {
+    async function optionsStatic(params: types.StaticOPTIONSArgsType, extra?: ExtraArgsType): Promise<types.StaticOPTIONSReturnType> {
         const endpoint = buildUrl("/static/<filename>", params.args);
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "OPTIONS", ...params},
+            extra,
         );
     }
 
-    async function getWithArgs(params: types.WithArgsGETArgsType): Promise<types.WithArgsGETReturnType> {
+    async function getWithArgs(params: types.WithArgsGETArgsType, extra?: ExtraArgsType): Promise<types.WithArgsGETReturnType> {
         const endpoint = buildUrl("/with/<arg>/args", params.args);
         return await requestFn(
             endpoint,
-            {method: "GET", ...params}
+            {method: "GET", ...params},
+            extra,
         );
     }
 
-    async function headWithArgs(params: types.WithArgsHEADArgsType): Promise<types.WithArgsHEADReturnType> {
+    async function headWithArgs(params: types.WithArgsHEADArgsType, extra?: ExtraArgsType): Promise<types.WithArgsHEADReturnType> {
         const endpoint = buildUrl("/with/<arg>/args", params.args);
         return await requestFn(
             endpoint,
-            {method: "HEAD", ...params}
+            {method: "HEAD", ...params},
+            extra,
         );
     }
 
-    async function optionsWithArgs(params: types.WithArgsOPTIONSArgsType): Promise<types.WithArgsOPTIONSReturnType> {
+    async function optionsWithArgs(params: types.WithArgsOPTIONSArgsType, extra?: ExtraArgsType): Promise<types.WithArgsOPTIONSReturnType> {
         const endpoint = buildUrl("/with/<arg>/args", params.args);
         return await requestFn(
             endpoint,
-            {method: "OPTIONS", ...params}
+            {method: "OPTIONS", ...params},
+            extra,
         );
     }
 

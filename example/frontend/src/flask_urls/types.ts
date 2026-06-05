@@ -7,8 +7,10 @@ export interface RequestOptions extends RequestArgs {
     body?: unknown;
 }
 
-export type RequestFunction = (
-    endpoint: string, options: RequestOptions
+export type RequestFunction<ExtraArgsType> = (
+    endpoint: string,
+    options: RequestOptions,
+    extra?: ExtraArgsType,
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => Promise<any>;
 
@@ -171,3 +173,4 @@ export interface WithArgsOPTIONSArgsType extends RequestArgs {
     args: _with_argsOPTIONSArgs;
     body?: _with_argsOPTIONSBody;
 }
+
